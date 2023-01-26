@@ -1,0 +1,4 @@
+(executable
+ (public_name bs)
+ (name main)
+ (libraries bs))
