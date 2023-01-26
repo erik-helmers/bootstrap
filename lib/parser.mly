@@ -38,12 +38,22 @@ let ident ==
     | ~ = IDENT; <>
     | "("; ~ = any_op; ")"; <>
 
+
 let any_op ==
   | "="; {"="}
   | ~ = INFIX_0; <>
   | ~ = INFIX_1; <>
   | ~ = INFIX_2; <>
   | ~ = INFIX_3; <>
+
+let ty :=
+  | ~ = ty_ato; <>
+  | a = ty_ato; "->"; b = ty; <TFun>
+
+let ty_ato ==
+  | ~ = ident; <Ty>
+  | "("; ~ = ty; ")"; <>
+
 
 let expr ==
   fun_expr
@@ -61,8 +71,6 @@ let bind_expr :=
 let bind_op ==
   | ident = ident; args = list(ident);
       "="; body = expr; {ident, fold_args args body}
-
-(* Binary ops of level *)
 
 let fold_binop(op, elem) :=
   | elem
@@ -86,5 +94,5 @@ let application_expr :=
 
 let atomic_expr :=
   | "("; ~ = expr;  ")"; <>
+  | "("; ~ = expr; ":"; ~ = ty; ")"; < EAnnot >
   | ~ = ident; <EIdent>
-
