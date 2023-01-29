@@ -14,37 +14,8 @@ type t = {
 
 let empty () = { types = []; values = [] }
 
-
-
-let unwrap_int expr = match expr with
-  | Int i -> i
-  | _ -> failwith "typing: expected int"
-
-let lam_of_binop f = Lam (
-    fun a -> let a = unwrap_int a in
-    Lam (fun b -> let b = unwrap_int b in
-       Int(f a b))
-)
-
-
-let ty_of_binop = TFun(Ty "int", TFun (Ty "int", Ty "int"))
 let base_ctx ={ values = [
-      "x", Int 1;
-      "y", Int 2;
-      "z", Int 3;
-      "+", lam_of_binop ( + );
-      "-", lam_of_binop ( - );
-      "*", lam_of_binop ( * );
-      "/", lam_of_binop ( / );
   ];  types = [
-      "int", HasKind Star;
-      "x", HasType (Ty "int");
-      "y", HasType (Ty "int");
-      "z", HasType (Ty "int");
-      "+", HasType ty_of_binop;
-      "-", HasType ty_of_binop;
-      "*", HasType ty_of_binop;
-      "/", HasType ty_of_binop;
   ]}
 
 let ident_ty ctx ident = List.assoc ident ctx.types;;
