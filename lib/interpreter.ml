@@ -13,3 +13,10 @@ let rec interpret ctx expr = match expr with
     | Neu (NVar _ as id) -> Neu (NApp (id, interpret ctx x))
     | _ -> raise (TypeError f))
   | EAnnot (expr, _) -> interpret ctx expr
+
+let rec quote i value = match value with
+  | Neu NVar id -> EIdent id
+  | Neu NApp (n,value) -> EApp (quote i (Neu n), quote i value)
+  | Lam f ->
+    let name = "quote_"^(string_of_int i) in
+    EFun (name, quote (i+1) (f (vvar name)))
