@@ -7,6 +7,7 @@
     "let", LET;
     "in" , IN;
     "fun", FUN;
+    "assume", ASSUME;
   ]
 
 }
@@ -21,10 +22,13 @@ rule token = parse
 | eof { EOF }
 | [' ' '\t' '\n']
     { token lexbuf }
-|  (alpha | '_')  ( alpha | num | '_' | '\'' ) * as id {
+|  (alpha | num | '_')  ( alpha | num | '_' | '\'' ) * as id {
     try Hashtbl.find keywords id
       with Not_found -> IDENT id
     }
+| "∀" { FORALL }
+| "*" { STAR }
+| "." { DOT }
 | "->"
     { ARROW }
 | '('

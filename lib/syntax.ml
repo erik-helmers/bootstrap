@@ -1,23 +1,25 @@
 type ident = string
 [@@deriving show]
 
-type kind = Star;;
 
-type ty =
-    Ty of ident
-  | TFun of ty * ty
+type top =
+    TAssign of ident * expr
+  | TAssume of ident * expr
 [@@deriving show]
-
-type expr =
+and expr =
     EIdent of ident
   | EApp of expr * expr
   | EFun of ident * expr
-  | EAnnot of expr * ty
+  | EAnnot of expr * expr
+  | EStar
+  | EPi of ident * expr * expr
 [@@deriving show]
 
 type value =
     Neu of neutral
   | Lam of (value -> value)
+  | Star
+  | Pi of value * (value -> value)
 and neutral =
     NVar of ident
   | NApp of neutral * value

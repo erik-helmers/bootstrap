@@ -1,26 +1,36 @@
 open Syntax;;
-open Context;;
 open Interpreter;;
 open Typing;;
 
-let parse_expr line =
+let parse f line =
   let linebuf = Lexing.from_string line in
-  Parser.main Lexer.token linebuf
+  f Lexer.token linebuf
+;;
+let parse_top = parse Parser.main;;
+let parse_expr = parse Parser.standalone_expr;;
+let parse_ty = parse Parser.standalone_ty;;
+
+let ctx = ref Context.base_ctx
+
+
+
+let assume ident ty =
+  ctx := Context.add_ident_ty !ctx ident ty
+
+let define ident v =
+  ctx := Context.add_ident_val !ctx ident v
 ;;
 
-let base_ctx = ref Context.base_ctx
-
+let top  line = match parse_top line with
+  | TAssign(id, expr) ->
+      ctx := Context.add_ident_val !ctx id (interpret !ctx expr);
+      ctx := Context.add_ident_ty  !ctx id (typeof    !ctx expr)
+  | TAssume(id, expr) ->
+      ctx := Context.add_ident_val !ctx id (vvar id);
+      ctx := Context.add_ident_ty  !ctx id (interpret !ctx expr)
 
 module Operators = struct
     let (!!) = parse_expr;;
-    let (!$) line = interpret !base_ctx !!line ;;
-    let (!:) line = typeof !base_ctx !!line;;
+    let (!$) line = interpret !ctx !!line ;;
+    let (!:) line = typeof !ctx !!line;;
 end;;
-
-open Operators;;
-
-let assume ident ty =
-  base_ctx := Context.add_ident_ty !base_ctx ident ty
-
-let define ident line =
-  base_ctx := Context.add_ident_val !base_ctx ident !$line

@@ -2,21 +2,28 @@
 
 %{ open Syntax %}
 
-%start <Syntax.expr> main
-%type  <Syntax.expr> expr
+%start <Syntax.top> main
+(* For debugging purposes *)
+%start  <Syntax.expr> standalone_expr
+%start  <Syntax.expr> standalone_ty
 
 %token <string> IDENT
 
 %token <string> INFIX_0 ">"
 %token <string> INFIX_1 "<"
 %token <string> INFIX_2 "+"
-%token <string> INFIX_3 "*"
+%token <string> INFIX_3 "/"
 
 %token LET    "let"
 %token IN     "in"
 %token FUN    "fun"
+%token ASSUME "assume"
 %token ARROW  "->"
 %token COLON  ":"
+
+%token FORALL "∀"
+%token STAR   "*"
+%token DOT    "."
 
 %token LPAREN "("
 %token RPAREN ")"
@@ -27,12 +34,22 @@
 %left ">"
 %left "<"
 %left "+"
-%left "*"
+%left "/"
 
 %%
 
-let main :=
-  ~ = expr; EOF; <>
+let standalone(x) :=
+  ~ = x; EOF; <>
+
+let main := standalone(top)
+let standalone_ty := standalone(ty)
+let standalone_expr := standalone(expr)
+
+let top :=
+  | "let"; ~ = ident; args = list(ident); "="; ~ = expr; {
+    TAssign(ident, fold_args args expr)}
+  | "assume"; ~ = ident; ":"; ~ = expr; {
+    TAssume(ident, expr)}
 
 let ident ==
     | ~ = IDENT; <>
@@ -48,10 +65,12 @@ let any_op ==
 
 let ty :=
   | ~ = ty_ato; <>
-  | a = ty_ato; "->"; b = ty; <TFun>
+  | a = ty_ato; "->"; b = ty; { EPi("_", a, b) }
+  | "∀"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, r2) }
 
 let ty_ato ==
-  | ~ = ident; <Ty>
+  | ~ = ident; <EIdent>
+  | "*"; { EStar }
   | "("; ~ = ty; ")"; <>
 
 
@@ -69,14 +88,13 @@ let bind_expr :=
      "in";  ~ = expr; { EApp(EFun(id,expr), body)  }
 
 let bind_op ==
-  | ident = ident; args = list(ident);
+  | ~ = ident; args = list(ident);
       "="; body = expr; {ident, fold_args args body}
 
 let fold_binop(op, elem) :=
   | elem
   | sum = fold_binop(op, elem); ~ = op; ~ = elem;
         { EApp(EApp(op, sum), elem) }
-
 let binop_expr :=
   | application_expr
   | left = binop_expr; ~ = binop_op; right = binop_expr;
@@ -94,5 +112,5 @@ let application_expr :=
 
 let atomic_expr :=
   | "("; ~ = expr;  ")"; <>
-  | "("; ~ = expr; ":"; ~ = ty; ")"; < EAnnot >
-  | ~ = ident; <EIdent>
+  | "("; e = expr; ":"; t = expr; ")"; { EAnnot(e,t) }
+  | ~ = ty; <>
