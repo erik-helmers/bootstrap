@@ -22,11 +22,13 @@
 %token COLON  ":"
 
 %token PI     "Π"
+%token SIGMA  "Σ"
 %token STAR   "*"
 %token DOT    "."
 
 %token LPAREN "("
 %token RPAREN ")"
+%token COMMA  ","
 %token EQ     "="
 
 %token EOF
@@ -67,6 +69,8 @@ let ty :=
   | ~ = ty_ato; <>
   | a = ty_ato; "->"; b = ty; { EPi("_", a, b) }
   | "Π"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, r2) }
+  | a = ty_ato; "*"; b = ty; { ESig("_", a, b) }
+  | "Σ"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { ESig(ident, r, r2) }
 
 let ty_ato ==
   | ~ = ident; <EIdent>
@@ -75,21 +79,26 @@ let ty_ato ==
 
 
 let expr ==
-  fun_expr
-
-let fun_expr :=
-  | bind_expr
-  | "fun"; args = list(ident); "->"; body=expr;
-        { fold_args args body }
+  bind_expr
 
 let bind_expr :=
-  | binop_expr
+  | fun_expr
   |  "let";  (id,body) = bind_op;
      "in";  ~ = expr; { EApp(EFun(id,expr), body)  }
 
 let bind_op ==
   | ~ = ident; args = list(ident);
       "="; body = expr; {ident, fold_args args body}
+
+let fun_expr :=
+  | tuple_expr
+  | "fun"; args = list(ident); "->"; body=expr;
+        { fold_args args body }
+
+let tuple_expr :=
+    binop_expr
+  | e1 = binop_expr; ","; e2 = expr; { ETuple(e1,e2) }
+
 
 let fold_binop(op, elem) :=
   | elem

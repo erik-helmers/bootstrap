@@ -10,16 +10,20 @@ and expr =
     EIdent of ident
   | EApp of expr * expr
   | EFun of ident * expr
+  | ETuple of expr * expr
   | EAnnot of expr * expr
   | EStar
-  | EPi of ident * expr * expr
+  | EPi  of ident * expr * expr
+  | ESig of ident * expr * expr
 [@@deriving show]
 
 type value =
     Neu of neutral
   | Lam of (value -> value)
+  | Tuple of value * value
   | Star
-  | Pi of value * (value -> value)
+  | Pi  of value * (value -> value)
+  | Sig of value * (value -> value)
 and neutral =
     NVar of ident
   | NApp of neutral * value
