@@ -26,7 +26,7 @@ rule token = parse
     try Hashtbl.find keywords id
       with Not_found -> IDENT id
     }
-| "∀" { FORALL }
+| "Π" | "∀" (*legacy*) { PI }
 | "*" { STAR }
 | "." { DOT }
 | "->"

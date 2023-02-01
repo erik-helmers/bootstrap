@@ -21,7 +21,7 @@
 %token ARROW  "->"
 %token COLON  ":"
 
-%token FORALL "∀"
+%token PI     "Π"
 %token STAR   "*"
 %token DOT    "."
 
@@ -66,7 +66,7 @@ let any_op ==
 let ty :=
   | ~ = ty_ato; <>
   | a = ty_ato; "->"; b = ty; { EPi("_", a, b) }
-  | "∀"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, r2) }
+  | "Π"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, r2) }
 
 let ty_ato ==
   | ~ = ident; <EIdent>
