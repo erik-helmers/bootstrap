@@ -1,7 +1,10 @@
 (library
  (name bs)
- (preprocess (pps ppx_deriving.show ppx_deriving.ord))
-)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord)))
 
-(ocamllex (modules lexer))
-(menhir (modules parser))
+(ocamllex
+ (modules lexer))
+
+(menhir
+ (modules parser))
