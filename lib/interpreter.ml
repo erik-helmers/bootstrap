@@ -8,17 +8,16 @@ let rec interpret ctx expr =
   | EStar -> Star
   | EPi (r, r') ->
       let t = interpret ctx r in
-      let t' v = interpret (Ctx.add_ident ctx "fixme" v t) r' in
+      let t' v = interpret (Ctx.push ctx v) r' in
       Pi (t, t')
   | ESig (r, r') ->
       let t = interpret ctx r in
-      let t' v = interpret (Ctx.add_ident ctx "fixme" v t) r' in
+      let t' v = interpret (Ctx.push ctx v) r' in
       Sig (t, t')
-  | EBound id -> failwith "todo"
-  | EFree Global id -> Ctx.ident_val ctx id
-  | EFree _ -> failwith "todo"
+  | EBound id -> Ctx.bound ctx id
+  | EFree name -> Ctx.name_val ctx name
   | EFun body ->
-      Lam (fun arg -> interpret (Ctx.add_ident_val ctx "fixme" arg) body)
+      Lam (fun arg -> interpret (Ctx.push ctx arg) body)
   | EApp (f, x) -> (
       let f = interpret ctx f in
       match f with

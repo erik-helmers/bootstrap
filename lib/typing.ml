@@ -9,12 +9,10 @@ let rec typeof ctx expr =
       let ty = interpret ctx ty in
       check ctx expr ty;
       ty
-  | EBound id -> failwith "todo"
-  | EFree Global id -> (
-      match Ctx.ident_ty_opt ctx id with
+  | EFree name -> (
+      match Ctx.name_ty_opt ctx name with
       | Some ty -> ty
       | _ -> failwith "typing error: unknown ident")
-  | EFree _ -> failwith "todo"
   | EApp (e1, e2) -> (
       match typeof ctx e1 with
       | Pi (t, t') ->
@@ -25,12 +23,12 @@ let rec typeof ctx expr =
   | EPi ( r, r') ->
       check ctx r Star;
       let ty = interpret ctx r in
-      check (Ctx.add_ident ctx "fixme" (vvar "fixme") ty) r' Star;
+      check (Ctx.add_name ctx (Global "fixme") (vvar "fixme") ty) r' Star;
       Star
   | ESig ( r, r') ->
       check ctx r Star;
       let ty = interpret ctx r in
-      check (Ctx.add_ident ctx "fixme" (vvar "fixme") ty) r' Star;
+      check (Ctx.add_name ctx (Global "fixme") (vvar "fixme") ty) r' Star;
       Star
   | _ -> failwith "typing: expr is not inferrable"
 
@@ -38,7 +36,7 @@ and check ctx expr ty =
   match expr with
   | EFun body -> (
       match ty with
-      | Pi (t, t') -> check (Ctx.add_ident_ty ctx "fixme" t) body (t' (vvar "fixme"))
+      | Pi (t, t') -> check (Ctx.add_name_ty ctx (Global "fixme") t) body (t' (vvar "fixme"))
       | _ -> failwith "typing: ill-typed expr")
   | ETuple (e1, e2) -> (
       match ty with
