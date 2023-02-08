@@ -68,9 +68,9 @@ let any_op ==
 let ty :=
   | ~ = ty_ato; <>
   | a = ty_ato; "->"; b = ty; { EPi("_", a, b) }
-  | "Π"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, r2) }
+  | "Π"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { EPi(ident, r, subst_arg ident r2) }
   | a = ty_ato; "*"; b = ty; { ESig("_", a, b) }
-  | "Σ"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { ESig(ident, r, r2) }
+  | "Σ"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { ESig(ident, r, subst_arg ident r2) }
 
 let ty_ato ==
   | ~ = ident; <EIdent>
@@ -84,7 +84,7 @@ let expr ==
 let bind_expr :=
   | fun_expr
   |  "let";  (id,body) = bind_op;
-     "in";  ~ = expr; { EApp(EFun(id,expr), body)  }
+     "in";  ~ = expr; { EApp(EFun(id,subst_arg id expr), body)  }
 
 let bind_op ==
   | ~ = ident; args = list(ident);

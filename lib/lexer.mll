@@ -27,6 +27,7 @@ rule token = parse
       with Not_found -> IDENT id
     }
 | "Π" | "∀" (*legacy*) { PI }
+| "Σ" | "∃" (*legacy*) { SIGMA }
 | '*' { STAR }
 | '.' { DOT }
 | ',' { COMMA }

@@ -14,6 +14,7 @@ let rec interpret ctx expr =
       let t = interpret ctx r in
       let t' v = interpret (Ctx.add_ident ctx id v t) r' in
       Sig (t, t')
+  | EBound id -> failwith "todo"
   | EIdent id -> Ctx.ident_val ctx id
   | EFun (id, body) ->
       Lam (fun arg -> interpret (Ctx.add_ident_val ctx id arg) body)

@@ -9,6 +9,7 @@ let rec typeof ctx expr =
       let ty = interpret ctx ty in
       check ctx expr ty;
       ty
+  | EBound id -> failwith "todo"
   | EIdent id -> (
       match Ctx.ident_ty_opt ctx id with
       | Some ty -> ty
