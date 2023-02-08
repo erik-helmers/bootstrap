@@ -22,23 +22,23 @@ let rec typeof ctx expr =
           t' (interpret ctx e2)
       | _ -> failwith "typing error: type is not applicable ")
   | EStar -> Star
-  | EPi (id, r, r') ->
+  | EPi ( r, r') ->
       check ctx r Star;
       let ty = interpret ctx r in
-      check (Ctx.add_ident ctx id (vvar id) ty) r' Star;
+      check (Ctx.add_ident ctx "fixme" (vvar "fixme") ty) r' Star;
       Star
-  | ESig (id, r, r') ->
+  | ESig ( r, r') ->
       check ctx r Star;
       let ty = interpret ctx r in
-      check (Ctx.add_ident ctx id (vvar id) ty) r' Star;
+      check (Ctx.add_ident ctx "fixme" (vvar "fixme") ty) r' Star;
       Star
   | _ -> failwith "typing: expr is not inferrable"
 
 and check ctx expr ty =
   match expr with
-  | EFun (id, body) -> (
+  | EFun body -> (
       match ty with
-      | Pi (t, t') -> check (Ctx.add_ident_ty ctx id t) body (t' (vvar id))
+      | Pi (t, t') -> check (Ctx.add_ident_ty ctx "fixme" t) body (t' (vvar "fixme"))
       | _ -> failwith "typing: ill-typed expr")
   | ETuple (e1, e2) -> (
       match ty with
