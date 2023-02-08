@@ -17,7 +17,7 @@ let top line =
   match parse_top line with
   | TAssign (id, expr) ->
       ctx := Context.add_name_val !ctx (Global id) (interpret !ctx expr);
-      ctx := Context.add_name_ty !ctx (Global id) (typeof !ctx expr)
+      ctx := Context.add_name_ty !ctx (Global id) (typeof 0 !ctx expr)
   | TAssume (id, expr) ->
       ctx := Context.add_name_val !ctx (Global id) (vvar id);
       ctx := Context.add_name_ty !ctx (Global id) (interpret !ctx expr)
@@ -25,5 +25,5 @@ let top line =
 module Operators = struct
   let ( !! ) = parse_expr
   let ( !$ ) line = interpret !ctx !!line
-  let ( !: ) line = typeof !ctx !!line
+  let ( !: ) line = typeof 0 !ctx !!line
 end
