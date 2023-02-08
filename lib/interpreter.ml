@@ -15,7 +15,8 @@ let rec interpret ctx expr =
       let t' v = interpret (Ctx.add_ident ctx id v t) r' in
       Sig (t, t')
   | EBound id -> failwith "todo"
-  | EIdent id -> Ctx.ident_val ctx id
+  | EFree Global id -> Ctx.ident_val ctx id
+  | EFree _ -> failwith "todo"
   | EFun (id, body) ->
       Lam (fun arg -> interpret (Ctx.add_ident_val ctx id arg) body)
   | EApp (f, x) -> (
@@ -34,7 +35,7 @@ let quote =
     | Star -> EStar
     | Pi (v, f) -> EPi (name, aux i v, aux (i + 1) (f (vvar name)))
     | Sig (v, f) -> ESig (name, aux i v, aux (i + 1) (f (vvar name)))
-    | Neu (NVar id) -> EIdent id
+    | Neu (NVar id) -> EFree (Global id)
     | Neu (NApp (n, value)) -> EApp (aux i (Neu n), aux i value)
     | Lam f -> EFun (name, aux (i + 1) (f (vvar name)))
     | Tuple (v1, v2) -> ETuple (aux i v1, aux i v2)

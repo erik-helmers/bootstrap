@@ -3,7 +3,7 @@ type ident = string [@@deriving show]
 type top = TAssign of ident * expr | TAssume of ident * expr [@@deriving show]
 
 and expr =
-  | EIdent of ident
+  | EFree of name
   | EBound of int
   | EApp of expr * expr
   | EFun of ident * expr
@@ -28,7 +28,7 @@ type value =
 and neutral = NVar of ident | NApp of neutral * value
 
 let vvar x = Neu (NVar x)
-let global id = EIdent id
+let global id = EFree (Global id)
 
 let rec subst_arg arg = let rec aux i expr = match expr with
   | EApp (f,x) -> EApp(aux i f, aux i x)
@@ -37,7 +37,8 @@ let rec subst_arg arg = let rec aux i expr = match expr with
   | ESig (id,a,b) -> ESig(id, aux i a, aux (i+1) b)
   | ETuple (a,b) -> ETuple (aux i a, aux i b)
   | EAnnot (a,b) -> EAnnot (aux i a, aux i b)
-  | EIdent id -> if id=arg then EBound i else expr
+  | EFree Global id -> if id=arg then EBound i else expr
+  | EFree _ -> failwith "unexpected"
   | EStar | EBound _ -> expr
 in aux 0
 

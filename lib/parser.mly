@@ -73,7 +73,7 @@ let ty :=
   | "Σ"; ~ = ident; ":"; r = ty_ato; "."; r2 = expr; { ESig(ident, r, subst_arg ident r2) }
 
 let ty_ato ==
-  | ~ = ident; <EIdent>
+  | ~ = ident; <global>
   | "*"; { EStar }
   | "("; ~ = ty; ")"; <>
 
@@ -110,10 +110,10 @@ let binop_expr :=
         { EApp(EApp(binop_op, left), right) }
 
 let binop_op ==
-  | ~ = INFIX_0; <EIdent>
-  | ~ = INFIX_1; <EIdent>
-  | ~ = INFIX_2; <EIdent>
-  | ~ = INFIX_3; <EIdent>
+  | ~ = INFIX_0; <global>
+  | ~ = INFIX_1; <global>
+  | ~ = INFIX_2; <global>
+  | ~ = INFIX_3; <global>
 
 let application_expr :=
   | atomic_expr

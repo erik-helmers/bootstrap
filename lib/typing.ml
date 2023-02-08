@@ -10,10 +10,11 @@ let rec typeof ctx expr =
       check ctx expr ty;
       ty
   | EBound id -> failwith "todo"
-  | EIdent id -> (
+  | EFree Global id -> (
       match Ctx.ident_ty_opt ctx id with
       | Some ty -> ty
       | _ -> failwith "typing error: unknown ident")
+  | EFree _ -> failwith "todo"
   | EApp (e1, e2) -> (
       match typeof ctx e1 with
       | Pi (t, t') ->
