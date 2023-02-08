@@ -22,20 +22,20 @@ let rec interpret ctx expr =
       let f = interpret ctx f in
       match f with
       | Lam f -> f (interpret ctx x)
-      | Neu (NVar _ as id) -> Neu (NApp (id, interpret ctx x))
+      | Neu (NFree _ as id) -> Neu (NApp (id, interpret ctx x))
       | _ -> raise (TypeError f))
   | ETuple (e1, e2) -> Tuple (interpret ctx e1, interpret ctx e2)
   | EAnnot (expr, _) -> interpret ctx expr
 
 let quote =
   let rec aux i value =
-    let name = "quote_" ^ string_of_int i in
+    let name = Quote i in
     match value with
     | Star -> EStar
-    | Pi (v, f) -> EPi (aux i v, aux (i + 1) (f (vvar name)))
-    | Sig (v, f) -> ESig (aux i v, aux (i + 1) (f (vvar name)))
-    | Lam f -> EFun ( aux (i + 1) (f (vvar name)))
-    | Neu (NVar id) -> EFree (Global id)
+    | Pi (v, f) -> EPi (aux i v, aux (i + 1) (f (vfree name)))
+    | Sig (v, f) -> ESig (aux i v, aux (i + 1) (f (vfree name)))
+    | Lam f -> EFun ( aux (i + 1) (f (vfree name)))
+    | Neu (NFree id) -> EFree id
     | Neu (NApp (n, value)) -> EApp (aux i (Neu n), aux i value)
     | Tuple (v1, v2) -> ETuple (aux i v1, aux i v2)
   in

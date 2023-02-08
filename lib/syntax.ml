@@ -25,9 +25,10 @@ type value =
   | Pi of value * (value -> value)
   | Sig of value * (value -> value)
 
-and neutral = NVar of ident | NApp of neutral * value
+and neutral = NFree of name | NApp of neutral * value
 
-let vvar x = Neu (NVar x)
+let vfree n = Neu (NFree n)
+let vvar x = vfree (Global x)
 let global id = EFree (Global id)
 
 let subst_arg arg = let rec aux i expr = match expr with
