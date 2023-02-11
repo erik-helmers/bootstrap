@@ -3,6 +3,7 @@
 (name bs)
 
 (using menhir 2.1)
+(using mdx 0.3)
 
 (generate_opam_files true)
 
@@ -19,7 +20,7 @@
  (name bs)
  (synopsis "BS : A type project")
  (description "")
- (depends ocaml dune menhir ppx_import)
+ (depends ocaml dune menhir ppx_import pprint)
  (tags
   (topics "research")))
 

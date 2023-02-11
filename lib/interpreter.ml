@@ -16,8 +16,7 @@ let rec interpret ctx expr =
       Sig (t, t')
   | EBound id -> Ctx.bound ctx id
   | EFree name -> Ctx.name_val ctx name
-  | EFun body ->
-      Lam (fun arg -> interpret (Ctx.push ctx arg) body)
+  | EFun body -> Lam (fun arg -> interpret (Ctx.push ctx arg) body)
   | EApp (f, x) -> (
       let f = interpret ctx f in
       match f with
@@ -34,7 +33,7 @@ let quote =
     | Star -> EStar
     | Pi (v, f) -> EPi (aux i v, aux (i + 1) (f (vfree name)))
     | Sig (v, f) -> ESig (aux i v, aux (i + 1) (f (vfree name)))
-    | Lam f -> EFun ( aux (i + 1) (f (vfree name)))
+    | Lam f -> EFun (aux (i + 1) (f (vfree name)))
     | Neu (NFree id) -> EFree id
     | Neu (NApp (n, value)) -> EApp (aux i (Neu n), aux i value)
     | Tuple (v1, v2) -> ETuple (aux i v1, aux i v2)

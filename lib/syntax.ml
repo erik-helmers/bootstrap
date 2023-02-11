@@ -10,12 +10,11 @@ and expr =
   | ETuple of expr * expr
   | EAnnot of expr * expr
   | EStar
-  | EPi of  expr * expr
-  | ESig of  expr * expr
+  | EPi of expr * expr
+  | ESig of expr * expr
 [@@deriving show]
 
-and name = Global of string | Local of int | Quote of int
-[@@deriving show]
+and name = Global of string | Local of int | Quote of int [@@deriving show]
 
 type value =
   | Neu of neutral
@@ -31,17 +30,20 @@ let vfree n = Neu (NFree n)
 let vvar x = vfree (Global x)
 let global id = EFree (Global id)
 
-let subst_arg arg = let rec aux i expr = match expr with
-  | EApp (f,x) -> EApp(aux i f, aux i x)
-  | EFun f -> EFun(aux (i+1) f)
-  | EPi (a,b) -> EPi(aux i a, aux (i+1) b)
-  | ESig (a,b) -> ESig(aux i a, aux (i+1) b)
-  | ETuple (a,b) -> ETuple (aux i a, aux i b)
-  | EAnnot (a,b) -> EAnnot (aux i a, aux i b)
-  | EFree Global id -> if id=arg then EBound i else expr
-  | EFree _ -> failwith "unexpected"
-  | EStar | EBound _ -> expr
-in aux 0
+let subst_arg arg =
+  let rec aux i expr =
+    match expr with
+    | EApp (f, x) -> EApp (aux i f, aux i x)
+    | EFun f -> EFun (aux (i + 1) f)
+    | EPi (a, b) -> EPi (aux i a, aux (i + 1) b)
+    | ESig (a, b) -> ESig (aux i a, aux (i + 1) b)
+    | ETuple (a, b) -> ETuple (aux i a, aux i b)
+    | EAnnot (a, b) -> EAnnot (aux i a, aux i b)
+    | EFree (Global id) -> if id = arg then EBound i else expr
+    | EFree _ -> failwith "unexpected"
+    | EStar | EBound _ -> expr
+  in
+  aux 0
 
 let fold_args args body =
   List.fold_right (fun arg acc -> EFun (subst_arg arg acc)) args body

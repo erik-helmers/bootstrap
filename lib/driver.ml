@@ -1,7 +1,7 @@
 open Syntax
 open Interpreter
 open Typing
-include Print;;
+include Print
 
 let parse f line =
   let linebuf = Lexing.from_string line in
