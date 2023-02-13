@@ -1,4 +1,4 @@
-type ident = string [@@deriving show]
+type atom = Atom.t
 
 type expr =
   | EFree of name
