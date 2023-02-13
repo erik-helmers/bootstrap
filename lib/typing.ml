@@ -1,4 +1,4 @@
-open Syntax
+open Types
 open Interpreter
 module Ctx = Context
 

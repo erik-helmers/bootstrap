@@ -1,4 +1,4 @@
-open Syntax
+open Types
 
 type info = value
 
@@ -9,7 +9,7 @@ type t = {
   bound : value list;
 }
 
-let empty = {types = []; free = []; bound = [] }
+let empty = { types = []; free = []; bound = [] }
 let base_ctx = { free = []; types = []; bound = [] }
 
 (* Bound variables *)
@@ -23,15 +23,21 @@ let name_ty ctx name =
 
 let name_ty_opt ctx name = List.assoc_opt name ctx.types
 let add_name_ty ctx name ty = { ctx with types = (name, ty) :: ctx.types }
-let pop_name_ty ctx name = { ctx with types = List.remove_assoc name ctx.types }
+
+let pop_name_ty ctx name =
+  { ctx with types = List.remove_assoc name ctx.types }
 
 let name_val ctx name =
   try List.assoc name ctx.free
   with Not_found -> failwith "context: missing name val "
 
 let name_val_opt ctx name = List.assoc_opt name ctx.free
-let add_name_val ctx name value = { ctx with free = (name, value) :: ctx.free }
-let pop_name_val ctx name = { ctx with free = List.remove_assoc name ctx.free }
+
+let add_name_val ctx name value =
+  { ctx with free = (name, value) :: ctx.free }
+
+let pop_name_val ctx name =
+  { ctx with free = List.remove_assoc name ctx.free }
 
 let add_name ctx name value ty =
   let ctx = add_name_val ctx name value in

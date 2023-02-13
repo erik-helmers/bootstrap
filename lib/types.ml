@@ -1,6 +1,7 @@
 type ident = string [@@deriving show]
 
-type top = TAssign of ident * expr | TAssume of ident * expr [@@deriving show]
+type top = TAssign of ident * expr | TAssume of ident * expr
+[@@deriving show]
 
 and expr =
   | EFree of name
@@ -14,7 +15,8 @@ and expr =
   | ESig of expr * expr
 [@@deriving show]
 
-and name = Global of string | Local of int | Quote of int [@@deriving show]
+and name = Global of string | Local of int | Quote of int
+[@@deriving show]
 
 type value =
   | Neu of neutral

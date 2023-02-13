@@ -1,4 +1,4 @@
-open Syntax
+open Types
 module Ctx = Context
 
 exception TypeError of value

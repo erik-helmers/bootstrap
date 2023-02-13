@@ -1,4 +1,4 @@
-open Syntax
+open Types
 open PPrint
 
 let pi = fancystring "Π" 1
