@@ -1,9 +1,6 @@
 type ident = string [@@deriving show]
 
-type top = TAssign of ident * expr | TAssume of ident * expr
-[@@deriving show]
-
-and expr =
+type expr =
   | EFree of name
   | EBound of int
   | EApp of expr * expr
@@ -31,21 +28,3 @@ and neutral = NFree of name | NApp of neutral * value
 let vfree n = Neu (NFree n)
 let vvar x = vfree (Global x)
 let global id = EFree (Global id)
-
-let subst_arg arg =
-  let rec aux i expr =
-    match expr with
-    | EApp (f, x) -> EApp (aux i f, aux i x)
-    | EFun f -> EFun (aux (i + 1) f)
-    | EPi (a, b) -> EPi (aux i a, aux (i + 1) b)
-    | ESig (a, b) -> ESig (aux i a, aux (i + 1) b)
-    | ETuple (a, b) -> ETuple (aux i a, aux i b)
-    | EAnnot (a, b) -> EAnnot (aux i a, aux i b)
-    | EFree (Global id) -> if id = arg then EBound i else expr
-    | EFree _ -> failwith "unexpected"
-    | EStar | EBound _ -> expr
-  in
-  aux 0
-
-let fold_args args body =
-  List.fold_right (fun arg acc -> EFun (subst_arg arg acc)) args body
