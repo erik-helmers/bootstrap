@@ -17,4 +17,5 @@ let cmp a1 a2 =
   assert (a1.id <> a2.id || a1.name = a2.name);
   Stdlib.compare a1.id a2.id
 
+let eq a1 a2 = cmp a1 a2 = 0
 let name a = a.name
