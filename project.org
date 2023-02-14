@@ -88,54 +88,61 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
 
 ** Typing
 #+begin_src latex
+
+In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $\tau$ while $e :_{\downarrow} \tau}$ is checkable.
+
 \begin{mathpar}
 \centering
 
+\inferrule*[right=(Chk)] { \Gamma \vdash x :_{\uparrow} \tau }{ \Gamma \vdash x :_{\downarrow} \tau }
+\and
+
 \inferrule*[right=(Ann)]
-  {\Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\
-   \Gamma \vdash e {:} \tau}
-  { \Gamma \vdash (e{:}\rho) {:} \tau }
-\and
-
-\inferrule*[right=(Star)]{\quad}{ \Gamma \vdash * {:} * }
+  {\Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\
+   \Gamma \vdash e :_{\downarrow} \tau}
+  { \Gamma \vdash (e:\rho) :_{\uparrow} \tau }
 \and
 
 
-\inferrule*[right=(Var)] { \Gamma(x) = \tau }{ \Gamma \vdash x {:} \tau }
+\inferrule*[right=(Star)]{\quad}{ \Gamma \vdash * :_{\uparrow} * }
+\and
+
+
+\inferrule*[right=(Var)] { \Gamma(x) = \tau }{ \Gamma \vdash x :_{\uparrow} \tau }
 \and
 
 \inferrule*[right=(Lam)]
-  { \Gamma,x {:} \tau \vdash e {:} \tau' }
-  { \Gamma \vdash  \lambda x \rightarrow e {:} \Pi (x {:} \tau) . \tau'}
+  { \Gamma,x : \tau \vdash e :_{\downarrow} \tau' }
+  { \Gamma \vdash  \lambda x \rightarrow e :_{\downarrow} \Pi (x : \tau) . \tau'}
 \and
 
 \inferrule*[right=(Tuple)]
-  { \Gamma \vdash e {:} \tau \quad  \Gamma \vdash e' {:} \tau'}
-  { \Gamma \vdash  (e,e') {:} \Sigma (x {:} \tau) . \tau'}
+  { \Gamma \vdash e :_{\downarrow} \tau \quad  \Gamma \vdash e' :_{\downarrow} \tau'}
+  { \Gamma \vdash  (e,e') :_{\downarrow} \Sigma (x : \tau) . \tau'}
 \and
 
 \inferrule*[right=(App)]
-  { \Gamma \vdash e {:} \Pi (x{:}\tau).\tau'  \quad  \Gamma \vdash e' {:} \tau \quad \tau'[x \mapsto e'] \Downarrow \tau'' }
-  { \Gamma \vdash e\ e' {:} \tau''}
+  { \Gamma \vdash e :_{\uparrow}  \Pi (x:\tau).\tau'  \quad  \Gamma \vdash e' :_{\downarrow} \tau \quad \tau'[x \mapsto e'] \Downarrow \tau'' }
+  { \Gamma \vdash e\ e' :_{\uparrow} \tau''}
 \and
 
 \inferrule*[right=(Fst)]
-  { \Gamma \vdash (e,\_) {:} \Sigma(x{:}\tau).\tau'}
-  { \Gamma \vdash e {:} \tau}
+  { \Gamma \vdash (e,\_) :_{\uparrow} \Sigma(x:\tau).\tau'}
+  { \Gamma \vdash e :_{\uparrow} \tau}
 \and
 
 \inferrule*[right=(Snd)]
-  { \Gamma \vdash (e, e') {:} \Sigma(x{:}\tau).\tau' \quad \tau'[x \mapsto e] \Downarrow \tau'' }
-  { \Gamma \vdash e' {:} \tau''}
+  { \Gamma \vdash (e, e') :_{\uparrow} \Sigma(x:\tau).\tau' \quad \tau'[x \mapsto e] \Downarrow \tau'' }
+  { \Gamma \vdash e' :_{\uparrow} \tau''}
 \and
 \inferrule*[right=(Pi)]
-   { \Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\ \Gamma,x{:}\tau \vdash \rho'  {:} * }
-   { \Gamma \vdash \Pi (x {:} \rho).\rho' {:} * }
+   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
+   { \Gamma \vdash \Pi (x : \rho).\rho' :_{\uparrow} * }
 \and
 
 \inferrule*[right=(Sigma)]
-   { \Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\ \Gamma,x{:}\tau \vdash \rho' {:} * }
-   { \Gamma \vdash \Sigma (x {:} \rho).\rho' {:} * }
+   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
+   { \Gamma \vdash \Sigma (x : \rho).\rho' :_{\uparrow} * }
 \and
 \end{mathpar}
 
