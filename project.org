@@ -1,0 +1,145 @@
+#+title: Bootstrap
+#+author: Erik Helmers
+
+
+#+latex_header_extra: \usepackage{proof,mathpartir}
+#+latex_header_extra: \usepackage{amsmath,amssymb,amsthm,textcomp}
+
+
+* NO Design et implémentation d'une syntaxe support
+
+
+L'objectif du sujet est de développer un certain moteur de typage. Pour commencer, on va donc créer un petit language interpreté qui servira de base pour pratiquer nos expérimentations.
+
+Pour rendre agréable le travail, on a ajouté de la syntaxe (=let id = ... in ...=, =let cons x y = x=, etc..) en veillant à ne pas ajouter de nouveau termes (par exemple les assignations sont juste des applications de fonctions).
+
+#+begin_quote
+letter   ::= A...Z | a...z
+
+number   ::= 0...9
+
+ident    ::= (letter|number|_) {letter|0...9|_|'}
+
+#+end_quote
+
+* Théorie
+
+** Syntaxe
+
+
+#+begin_src latex
+
+\begin{array}{lcll}
+e, \rho, \kappa &::=& e : \rho       &\text{annotated term} \\
+         &|& x            &\text{variable} \\
+         &|& e\ e'        &\text{application} \\
+         &|& \lambda x \rightarrow e      &\text{lambda} \\
+         &|& (e, e')      &\text{tuple} \\
+         &|&  *           &\text{type of types} \\
+         &|& \Pi x : \rho. \rho'  &\text{pi type} \\
+         &|& \Sigma x : \rho. \rho'  &\text{sigma type} \\
+\end{array}
+
+where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
+#+end_src
+
+
+** Evaluation
+
+#+begin_src latex
+
+
+\begin{array}{lcll}
+\nu, \tau    &::=& n           &\text{neutral term} \\
+         &|& \lambda x \rightarrow e      &\text{lambda} \\
+         &|& (e, e')      &\text{tuple} \\
+         &|&  *           &\text{type of types} \\
+         &|& \Pi x : \tau.\tau'   &\text{dependent function space} \\
+         &|& \Sigma x : \tau.\tau'   &\text{dependent pair space (?)} \\
+\end{array}
+
+\begin{mathpar}
+
+\inferrule*
+  { e \Downarrow \nu}
+  { e : \rho \Downarrow \nu}
+\and
+
+\inferrule* {\quad} { * \Downarrow *} \and
+
+\inferrule*
+  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
+  {\Pi (x : \rho).\rho' \Downarrow \Pi (x : \tau).\tau'}
+ \and
+\inferrule*{\quad}{ x \Downarrow x} \and
+\inferrule*
+  {e \Downarrow \lambda x \rightarrow \nu \quad \nu[ x \mapsto e'] \Downarrow \nu'}
+  { e\ e' \Downarrow \nu'}
+\and
+\inferrule*
+  {e \Downarrow n \quad e' \Downarrow \nu'}
+  { e\ e' \Downarrow n\ \nu'}
+\and
+\inferrule*{ \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}{ e \Downarrow \nu } \and
+
+\end{mathpar}
+
+#+end_src
+
+** Typing
+#+begin_src latex
+\begin{mathpar}
+\centering
+
+\inferrule*[right=(Ann)]
+  {\Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\
+   \Gamma \vdash e {:} \tau}
+  { \Gamma \vdash (e{:}\rho) {:} \tau }
+\and
+
+\inferrule*[right=(Star)]{\quad}{ \Gamma \vdash * {:} * }
+\and
+
+
+\inferrule*[right=(Var)] { \Gamma(x) = \tau }{ \Gamma \vdash x {:} \tau }
+\and
+
+\inferrule*[right=(Lam)]
+  { \Gamma,x {:} \tau \vdash e {:} \tau' }
+  { \Gamma \vdash  \lambda x \rightarrow e {:} \Pi (x {:} \tau) . \tau'}
+\and
+
+\inferrule*[right=(Tuple)]
+  { \Gamma \vdash e {:} \tau \quad  \Gamma \vdash e' {:} \tau'}
+  { \Gamma \vdash  (e,e') {:} \Sigma (x {:} \tau) . \tau'}
+\and
+
+\inferrule*[right=(App)]
+  { \Gamma \vdash e {:} \Pi (x{:}\tau).\tau'  \quad  \Gamma \vdash e' {:} \tau \quad \tau'[x \mapsto e'] \Downarrow \tau'' }
+  { \Gamma \vdash e\ e' {:} \tau''}
+\and
+
+\inferrule*[right=(Fst)]
+  { \Gamma \vdash (e,\_) {:} \Sigma(x{:}\tau).\tau'}
+  { \Gamma \vdash e {:} \tau}
+\and
+
+\inferrule*[right=(Snd)]
+  { \Gamma \vdash (e, e') {:} \Sigma(x{:}\tau).\tau' \quad \tau'[x \mapsto e] \Downarrow \tau'' }
+  { \Gamma \vdash e' {:} \tau''}
+\and
+\inferrule*[right=(Pi)]
+   { \Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\ \Gamma,x{:}\tau \vdash \rho'  {:} * }
+   { \Gamma \vdash \Pi (x {:} \rho).\rho' {:} * }
+\and
+
+\inferrule*[right=(Sigma)]
+   { \Gamma \vdash \rho {:} * \quad \rho \Downarrow \tau \\ \Gamma,x{:}\tau \vdash \rho' {:} * }
+   { \Gamma \vdash \Sigma (x {:} \rho).\rho' {:} * }
+\and
+\end{mathpar}
+
+#+end_src
+
+
+
