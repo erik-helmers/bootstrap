@@ -30,14 +30,16 @@ ident    ::= (letter|number|_) {letter|0...9|_|'}
 #+begin_src latex
 
 \begin{array}{lcll}
-e, \rho, \kappa &::=& e : \rho       &\text{annotated term} \\
-         &|& x            &\text{variable} \\
-         &|& e\ e'        &\text{application} \\
-         &|& \lambda x \rightarrow e      &\text{lambda} \\
-         &|& (e, e')      &\text{tuple} \\
-         &|&  *           &\text{type of types} \\
-         &|& \Pi x : \rho. \rho'  &\text{pi type} \\
-         &|& \Sigma x : \rho. \rho'  &\text{sigma type} \\
+e, \rho, \kappa &::=& e : \rho         &\text{annotated term} \\
+         &|& x              &\text{variable} \\
+         &|& \lambda x \rightarrow e        &\text{lambda} \\
+         &|& e\ e'          &\text{application} \\
+         &|& \Pi (x : \rho).\rho'   &\text{pi type} \\
+         &|& (e, e')        &\text{tuple} \\
+         &|& \text{fst}\ \nu  &\text{fst} \\
+         &|& \text{snd}\ \nu  &\text{snd} \\
+         &|& \Sigma (x : \rho).\rho'   &\text{sigma type} \\
+         &|&  *             &\text{type of types} \\
 \end{array}
 
 where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
@@ -51,36 +53,42 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
 
 \begin{array}{lcll}
 \nu, \tau    &::=& n           &\text{neutral term} \\
-         &|& \lambda x \rightarrow e      &\text{lambda} \\
-         &|& (e, e')      &\text{tuple} \\
+         &|& \lambda x \rightarrow \nu      &\text{lambda} \\
+         &|& (\nu, \nu')      &\text{tuple} \\
          &|&  *           &\text{type of types} \\
-         &|& \Pi x : \tau.\tau'   &\text{dependent function space} \\
-         &|& \Sigma x : \tau.\tau'   &\text{dependent pair space (?)} \\
+         &|& \Pi (x : \tau).\tau' &\text{dependent function space} \\
+         &|& \Sigma (x : \tau).\tau' &\text{dependent pair space (?)} \\
 \end{array}
 
 \begin{mathpar}
 
-\inferrule*
+
+\inferrule*[right=(Star)] {\quad} { * \Downarrow *} \and
+
+\inferrule*[right=(Var)]{\quad}{ x \Downarrow x} \and
+
+\inferrule*[right=(Ann)]
   { e \Downarrow \nu}
   { e : \rho \Downarrow \nu}
 \and
 
-\inferrule* {\quad} { * \Downarrow *} \and
+\inferrule*[right=(Lam)]
+    { e \Downarrow \nu }
+    { \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}
+\and
+\inferrule*[right=(Tuple)]
+    { e \Downarrow \nu \quad e' \Downarrow \nu' }
+    { (e, e') \Downarrow (\nu, \nu')}
+\and
 
-\inferrule*
-  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
-  {\Pi (x : \rho).\rho' \Downarrow \Pi (x : \tau).\tau'}
- \and
-\inferrule*{\quad}{ x \Downarrow x} \and
-\inferrule*
+\inferrule*[right=(App)]
   {e \Downarrow \lambda x \rightarrow \nu \quad \nu[ x \mapsto e'] \Downarrow \nu'}
   { e\ e' \Downarrow \nu'}
 \and
-\inferrule*
+\inferrule*[right=(NApp)]
   {e \Downarrow n \quad e' \Downarrow \nu'}
   { e\ e' \Downarrow n\ \nu'}
 \and
-\inferrule*{ \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}{ e \Downarrow \nu } \and
 
 \inferrule*[right=(Fst)]
   {e \Downarrow (\nu,\nu')}
@@ -91,6 +99,17 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
   {e \Downarrow (\nu,\nu')}
   { \text{snd}\ e \Downarrow \nu'}
 \and
+
+\inferrule*[right=(Pi)]
+  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
+  {\Pi (x : \rho).\rho' \Downarrow \Pi (x : \tau).\tau'}
+\and
+
+\inferrule*[right=(Sigma)]
+  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
+  {\Sigma (x : \rho).\rho' \Downarrow \Sigma (x : \tau).\tau'}
+\and
+
 
 \end{mathpar}
 
