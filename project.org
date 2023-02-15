@@ -63,9 +63,9 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
 \begin{mathpar}
 
 
-\inferrule*[right=(Star)] {\quad} { * \Downarrow *} \and
+\inferrule*[right=(Star)] {\\} { * \Downarrow *} \and
 
-\inferrule*[right=(Var)]{\quad}{ x \Downarrow x} \and
+\inferrule*[right=(Var)]{\\}{ x \Downarrow x} \and
 
 \inferrule*[right=(Ann)]
   { e \Downarrow \nu}
@@ -77,16 +77,16 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
     { \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}
 \and
 \inferrule*[right=(Tuple)]
-    { e \Downarrow \nu \quad e' \Downarrow \nu' }
+    { e \Downarrow \nu \\ e' \Downarrow \nu' }
     { (e, e') \Downarrow (\nu, \nu')}
 \and
 
 \inferrule*[right=(App)]
-  {e \Downarrow \lambda x \rightarrow \nu \quad \nu[ x \mapsto e'] \Downarrow \nu'}
+  {e \Downarrow \lambda x \rightarrow \nu \\ \nu[ x \mapsto e'] \Downarrow \nu'}
   { e\ e' \Downarrow \nu'}
 \and
 \inferrule*[right=(NApp)]
-  {e \Downarrow n \quad e' \Downarrow \nu'}
+  {e \Downarrow n \\ e' \Downarrow \nu'}
   { e\ e' \Downarrow n\ \nu'}
 \and
 
@@ -101,12 +101,12 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
 \and
 
 \inferrule*[right=(Pi)]
-  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
+  {\rho \Downarrow \tau \\ \rho' \Downarrow \tau'}
   {\Pi (x : \rho).\rho' \Downarrow \Pi (x : \tau).\tau'}
 \and
 
 \inferrule*[right=(Sigma)]
-  {\rho \Downarrow \tau \quad \rho' \Downarrow \tau'}
+  {\rho \Downarrow \tau \\ \rho' \Downarrow \tau'}
   {\Sigma (x : \rho).\rho' \Downarrow \Sigma (x : \tau).\tau'}
 \and
 
@@ -127,13 +127,13 @@ In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $
 \and
 
 \inferrule*[right=(Ann)]
-  {\Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\
+  {\Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\
    \Gamma \vdash e :_{\downarrow} \tau}
   { \Gamma \vdash (e:\rho) :_{\uparrow} \tau }
 \and
 
 
-\inferrule*[right=(Star)]{\quad}{ \Gamma \vdash * :_{\uparrow} * }
+\inferrule*[right=(Star)]{\\}{ \Gamma \vdash * :_{\uparrow} * }
 \and
 
 
@@ -146,12 +146,12 @@ In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $
 \and
 
 \inferrule*[right=(Tuple)]
-  { \Gamma \vdash e :_{\downarrow} \tau \quad  \Gamma \vdash e' :_{\downarrow} \tau'}
+  { \Gamma \vdash e :_{\downarrow} \tau \\  \Gamma \vdash e' :_{\downarrow} \tau'}
   { \Gamma \vdash  (e,e') :_{\downarrow} \Sigma (x : \tau) . \tau'}
 \and
 
 \inferrule*[right=(App)]
-  { \Gamma \vdash e :_{\uparrow}  \Pi (x:\tau).\tau'  \quad  \Gamma \vdash e' :_{\downarrow} \tau \quad \tau'[x \mapsto e'] \Downarrow \tau'' }
+  { \Gamma \vdash e :_{\uparrow}  \Pi (x:\tau).\tau'  \\  \Gamma \vdash e' :_{\downarrow} \tau \\ \tau'[x \mapsto e'] \Downarrow \tau'' }
   { \Gamma \vdash e\ e' :_{\uparrow} \tau''}
 \and
 
@@ -161,21 +161,37 @@ In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $
 \and
 
 \inferrule*[right=(Snd)]
-  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau' \quad \tau'[x \mapsto \text{fst}\ e] \Downarrow \tau'' }
+  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau' \\ \tau'[x \mapsto \text{fst}\ e] \Downarrow \tau'' }
   { \Gamma \vdash \text{snd}\ e:_{\uparrow} \tau''}
 \and
 \inferrule*[right=(Pi)]
-   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
+   { \Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
    { \Gamma \vdash \Pi (x : \rho).\rho' :_{\uparrow} * }
+\label{ty:pi}
 \and
 
 \inferrule*[right=(Sigma)]
-   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
+   { \Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
    { \Gamma \vdash \Sigma (x : \rho).\rho' :_{\uparrow} * }
 \and
 \end{mathpar}
 
+
 #+end_src
 
+Une reformulation équivalentes des règles $\textsc{(Pi)}$ et $\textsc{(Sigma)}$, plus adaptée pour l'implémentation :
 
+#+begin_src latex
 
+\begin{mathpar}
+\inferrule*[right=(Pi)]
+   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma \vdash \rho' :_{\downarrow} \Pi(x:\tau).* }
+   { \Gamma \vdash \Pi (x : \rho).\rho' :_{\uparrow} * }
+\and
+
+\inferrule*[right=(Sigma)]
+   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma \vdash \rho' :_{\downarrow} \Pi(x:\tau).* }
+   { \Gamma \vdash \Sigma (x : \rho).\rho' :_{\uparrow} * }
+\and
+\end{mathpar}
+#+end_src
