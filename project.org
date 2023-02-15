@@ -82,6 +82,16 @@ where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
 \and
 \inferrule*{ \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}{ e \Downarrow \nu } \and
 
+\inferrule*[right=(Fst)]
+  {e \Downarrow (\nu,\nu')}
+  { \text{fst}\ e \Downarrow \nu}
+\and
+
+\inferrule*[right=(Snd)]
+  {e \Downarrow (\nu,\nu')}
+  { \text{snd}\ e \Downarrow \nu'}
+\and
+
 \end{mathpar}
 
 #+end_src
@@ -127,13 +137,13 @@ In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $
 \and
 
 \inferrule*[right=(Fst)]
-  { \Gamma \vdash (e,\_) :_{\uparrow} \Sigma(x:\tau).\tau'}
-  { \Gamma \vdash e :_{\uparrow} \tau}
+  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau'}
+  { \Gamma \vdash \text{fst}\ e :_{\uparrow} \tau}
 \and
 
 \inferrule*[right=(Snd)]
-  { \Gamma \vdash (e, e') :_{\uparrow} \Sigma(x:\tau).\tau' \quad \tau'[x \mapsto e] \Downarrow \tau'' }
-  { \Gamma \vdash e' :_{\uparrow} \tau''}
+  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau' \quad \tau'[x \mapsto \text{fst}\ e] \Downarrow \tau'' }
+  { \Gamma \vdash \text{snd}\ e:_{\uparrow} \tau''}
 \and
 \inferrule*[right=(Pi)]
    { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
