@@ -1,5 +1,7 @@
 type 'a t = { name : string; scoped : 'a } [@@deriving show]
 
+let make name scoped = { name; scoped }
+
 let opened bind binder =
   let fresh = Atom.make binder.name in
   (fresh, bind fresh binder.scoped)

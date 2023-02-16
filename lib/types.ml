@@ -1,19 +1,19 @@
-type atom = Atom.t [@@deriving show]
-and 'a binder = 'a Binder.t [@@deriving show]
+let pp_atom = Atom.pp
+and pp_binder = Binder.pp
+
+type atom = Atom.t
+and 'a binder = 'a Binder.t
 
 type expr =
-  | EFree of name
+  | EFree of atom
   | EBound of int
   | EApp of expr * expr
-  | EFun of expr
   | ETuple of expr * expr
   | EAnnot of expr * expr
   | EStar
-  | EPi of expr * expr
-  | ESig of expr * expr
-[@@deriving show]
-
-and name = Global of string | Local of int | Quote of int
+  | EFun of expr binder
+  | EPi of expr * expr binder
+  | ESig of expr * expr binder
 [@@deriving show]
 
 type value =
@@ -24,11 +24,10 @@ type value =
   | Pi of value * (value -> value)
   | Sig of value * (value -> value)
 
-and neutral = NFree of name | NApp of neutral * value
+and neutral = NFree of atom | NApp of neutral * value
 
 let vfree n = Neu (NFree n)
-let vvar x = vfree (Global x)
-let global id = EFree (Global id)
+
 (** Traverse l'expression en comptant les binders,
   * et à chaque noeud n, si map d n est None, continue normalement
   * sinon remplace l'expression courrante *)
@@ -42,9 +41,11 @@ let subst_ (map : int -> expr -> expr option) expr =
         | EApp (a, b) -> EApp (aux i a, aux i b)
         | ETuple (a, b) -> ETuple (aux i a, aux i b)
         | EAnnot (a, b) -> EAnnot (aux i a, aux i b)
-        | EFun f -> aux (i + 1) f.scoped
-        | EPi (t, f) -> EPi (aux i t, failwith "need to build binder")
-        | ESig (t, f) -> ESig (aux i t, failwith "need to build binder"))
+        | EFun f -> EFun (Binder.make f.name @@ aux (i + 1) f.scoped)
+        | EPi (t, f) ->
+            EPi (aux i t, Binder.make f.name @@ aux (i + 1) f.scoped)
+        | ESig (t, f) ->
+            ESig (aux i t, Binder.make f.name @@ aux (i + 1) f.scoped))
   in
   aux 0 expr
 

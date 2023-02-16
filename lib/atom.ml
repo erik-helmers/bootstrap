@@ -1,4 +1,6 @@
-type t = { uid : int; name : string } [@@deriving show]
+type t = { uid : int; name : string }
+
+let pp fmt a = Format.fprintf fmt "Atom(%s)" a.name
 
 (** We want this to stay unique *)
 let global_reset, global_nextuid =

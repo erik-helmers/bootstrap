@@ -4,8 +4,8 @@ type info = value
 
 type t = {
   (* The type checker only considers free variable *)
-  types : (name * info) list;
-  free : (name * value) list;
+  types : (atom * info) list;
+  free : (atom * value) list;
   bound : value list;
 }
 
