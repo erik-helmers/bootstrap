@@ -1,9 +1,109 @@
 #+title: Bootstrap
 #+author: Erik Helmers
 
+#+startup: latexpreview fold
 
-#+latex_header_extra: \usepackage{proof,mathpartir}
-#+latex_header_extra: \usepackage{amsmath,amssymb,amsthm,textcomp}
+#+latex_header: \usepackage{proof}
+#+latex_header: \usepackage{mathpartir}
+#+latex_header: \usepackage{amsmath,amssymb,amsthm,textcomp}
+#+latex_header: \usepackage{listofitems}
+#+latex_header: \usepackage{bssetup}
+
+
+#+name: bssetup
+#+begin_src latex :tangle bssetup.sty :exports none
+
+
+% Construit une substitution sur une liste #1
+% définie avec \readlist et pour valeur par défaut #2
+% Substitution
+\newcommand{\varlist}[3]{% 1 = symbol list, 2 = default command, 3 = index
+  \ifnum #3>\listlen{#1}[]%
+     #2{#3}%
+  \else #1[#3]
+  \fi
+}
+
+% Term symbols
+
+% Expression term identifiers
+\readlist*\tesyms{e,e',e''}
+\newcommand{\tedflt}[1]{e_{#1}}
+\newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
+
+% Term type identifiers
+\readlist*\ttysyms{\rho, \rho', \rho''}
+\newcommand{\ttydflt}[1]{\rho_{#1}}
+\newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
+
+% Term kind identifiers
+\readlist*\tksyms{\kappa, \kappa', \kappa''}
+\newcommand{\tkdflt}[1]{\kappa_{#1}}
+\newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
+
+% Term kind identifiers
+\readlist*\tvsyms{x, y, z}
+\newcommand{\tvdflt}[1]{x_{#1}}
+\newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
+
+
+% Lambda
+\newcommand{\tlam}[2]{\lambda #1 \rightarrow #2}
+% Tuple
+\newcommand{\ttup}[2]{(#1,#2)}
+% Fst
+\newcommand{\tfst}[1]{\text{fst}\ #1}
+% Snd
+\newcommand{\tsnd}[1]{\text{snd}\ #1}
+% Pi
+\newcommand{\tpi}[3]{\Pi(#1:#2).#3}
+% Sigma
+\newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
+% Type of types
+\newcommand{\tstar}{\star}
+
+
+% Value symbols
+
+% Value identifiers
+\readlist*\vesyms{\nu,\nu',\nu''}
+\newcommand{\vedflt}[1]{\nu_{#1}}
+\newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
+
+% Type identifiers
+\readlist*\vtsyms{\tau, \tau', \tau''}
+\newcommand{\vtdflt}[1]{\tau_{#1}}
+\newcommand{\vt}[1][1]{\varlist{\vtsyms}{\vtdflt}{#1}}
+
+% Neutral
+\readlist*\vnsyms{n, n', n''}
+\newcommand{\vndflt}[1]{n_{#1}}
+\newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+% Lambda
+\newcommand{\vlam}[2]{\lambda #1 \rightarrow #2}
+% Tuple
+\newcommand{\vtup}[2]{(#1,#2)}
+% Pi
+\newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+% Sigma
+\newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+% Type of types
+\newcommand{\vstar}{\star}
+
+% Symbols
+
+\newcommand{\evalsto}{\Downarrow}
+\newcommand{\tycheck}{:_{\downarrow}}
+\newcommand{\tyinfer}{:_{\uparrow}}
+
+\newcommand{\ctx}{\Gamma}
+\newcommand{\ctxmap}{\vdash}
+\newcommand{\ctxEmpty}{\Gamma}
+\newcommand{\ctxValid}[1]{\text{valid}(#1)}
+
+
+#+end_src
 
 
 * NO Design et implémentation d'une syntaxe support
@@ -26,172 +126,175 @@ ident    ::= (letter|number|_) {letter|0...9|_|'}
 
 ** Syntaxe
 
-
-#+begin_src latex
-
-\begin{array}{lcll}
-e, \rho, \kappa &::=& e : \rho         &\text{annotated term} \\
-         &|& x              &\text{variable} \\
-         &|& \lambda x \rightarrow e        &\text{lambda} \\
-         &|& e\ e'          &\text{application} \\
-         &|& \Pi (x : \rho).\rho'   &\text{pi type} \\
-         &|& (e, e')        &\text{tuple} \\
-         &|& \text{fst}\ \nu  &\text{fst} \\
-         &|& \text{snd}\ \nu  &\text{snd} \\
-         &|& \Sigma (x : \rho).\rho'   &\text{sigma type} \\
-         &|&  *             &\text{type of types} \\
+\[\begin{array}{lcll}
+e, \rho, \kappa &::=&\te: \rho                  &\text{annotated term} \\
+         &|& x                       &\text{variable} \\
+         &|& \tlam{x}{\te}           &\text{lambda} \\
+         &|& e\ \te[2]               &\text{application} \\
+         &|& \tpi{x}{\tty}{\tty[2]}  &\text{pi type} \\
+         &|& (e, \te[2])             &\text{tuple} \\
+         &|& \tfst{\te}              &\text{fst} \\
+         &|& \tsnd{\te}              &\text{snd} \\
+         &|& \tsig{x}{\tty}{\tty[2]} &\text{sigma type} \\
+         &|&  *                      &\text{type of types} \\
 \end{array}
+ \]
 
-where $e$, $\rho$, $\kappa$ represent expressions, types and kinds respectively.
-#+end_src
+where $e$, $\rho$, $\kappa$ represent general expressions, types and kinds respectively.
 
+
+** Contexte
+
+\[\begin{array}{lcll}
+\ctx &::=&\epsilon                  &\text{empty context}     \\
+         &|& \ctx, \tv:\vt   &\text{adding a variable} \\
+\end{array}
+\]
+
+\begin{mathpar}
+\inferrule*{  }{ \ctxValid{\epsilon} }
+\inferrule*
+    { \ctxValid{\ctx} \\ \ctx \ctxmap \vt \tycheck \vstar }
+    { \ctxValid{\ctx, \tv : \vt} }
+\end{mathpar}
 
 ** Evaluation
 
-#+begin_src latex
 
-
-\begin{array}{lcll}
-\nu, \tau    &::=& n           &\text{neutral term} \\
-         &|& \lambda x \rightarrow \nu      &\text{lambda} \\
-         &|& (\nu, \nu')      &\text{tuple} \\
-         &|&  *           &\text{type of types} \\
-         &|& \Pi (x : \tau).\tau' &\text{dependent function space} \\
-         &|& \Sigma (x : \tau).\tau' &\text{dependent pair space (?)} \\
+\[\begin{array}{lcll}
+\ve, \vt &::=& \vn                       &\text{neutral term} \\
+         & | & \vlam {\tv} {\ve}         &\text{lambda} \\
+         & | & \vtup {\ve} {\ve[2]}      &\text{tuple} \\
+         & | & \vstar                    &\text{type of types} \\
+         & | & \vpi {\tv} {\vt} {\vt[2]} &\text{dependent function space} \\
+         & | & \vsig {\tv}{\vt}{\vt[2]}  &\text{dependent pair space } \\
 \end{array}
+\]
 
 \begin{mathpar}
 
 
-\inferrule*[right=(Star)] {\\} { * \Downarrow *} \and
+\inferrule*[right=(Star)] {\\} { \tstar \evalsto *} \and
 
-\inferrule*[right=(Var)]{\\}{ x \Downarrow x} \and
+\inferrule*[right=(Var)]{\\}{ x \evalsto x} \and
 
 \inferrule*[right=(Ann)]
-  { e \Downarrow \nu}
-  { e : \rho \Downarrow \nu}
+  {\te\evalsto \ve}
+  {\te: \rho \evalsto \ve}
 \and
 
 \inferrule*[right=(Lam)]
-    { e \Downarrow \nu }
-    { \lambda x \rightarrow e \Downarrow \lambda x \rightarrow \nu}
+    {\te\evalsto \ve }
+    { \lambda x \rightarrow\te\evalsto \lambda x \rightarrow \ve}
 \and
 \inferrule*[right=(Tuple)]
-    { e \Downarrow \nu \\ e' \Downarrow \nu' }
-    { (e, e') \Downarrow (\nu, \nu')}
+    {\te\evalsto \ve \\ \te[2] \evalsto \ve[2] }
+    { (e, \te[2]) \evalsto (\ve, \ve[2])}
 \and
 
 \inferrule*[right=(App)]
-  {e \Downarrow \lambda x \rightarrow \nu \\ \nu[ x \mapsto e'] \Downarrow \nu'}
-  { e\ e' \Downarrow \nu'}
+  {e \evalsto \lambda x \rightarrow \ve \\ \ve[1][ x \mapsto \te[2]] \evalsto \ve[2]}
+  { e\ \te[2] \evalsto \ve[2]}
 \and
 \inferrule*[right=(NApp)]
-  {e \Downarrow n \\ e' \Downarrow \nu'}
-  { e\ e' \Downarrow n\ \nu'}
+  {e \evalsto n \\ \te[2] \evalsto \ve[2]}
+  {e \ \te[2] \evalsto n\ \ve[2]}
 \and
 
 \inferrule*[right=(Fst)]
-  {e \Downarrow (\nu,\nu')}
-  { \text{fst}\ e \Downarrow \nu}
+  {e \evalsto (\ve ,\ve[2])}
+  { \text{fst}\ \te\evalsto \ve}
 \and
 
 \inferrule*[right=(Snd)]
-  {e \Downarrow (\nu,\nu')}
-  { \text{snd}\ e \Downarrow \nu'}
+  {e \evalsto (\ve,\ve[2])}
+  { \text{snd}\ \te \evalsto \ve[2]}
 \and
 
 \inferrule*[right=(Pi)]
-  {\rho \Downarrow \tau \\ \rho' \Downarrow \tau'}
-  {\Pi (x : \rho).\rho' \Downarrow \Pi (x : \tau).\tau'}
+  {\rho \evalsto \vt \\ \rho' \evalsto \vt'}
+  {\vpi{x : \rho).\rho' \evalsto \Pi (x }{ \vt}{\vt'}}
 \and
 
 \inferrule*[right=(Sigma)]
-  {\rho \Downarrow \tau \\ \rho' \Downarrow \tau'}
-  {\Sigma (x : \rho).\rho' \Downarrow \Sigma (x : \tau).\tau'}
+  {\rho \evalsto \vt \\ \rho' \evalsto \vt'}
+  {\vsig{x : \rho).\rho' \evalsto \Sigma (x }{ \vt}{\vt'}}
 \and
 
 
 \end{mathpar}
 
-#+end_src
 
 ** Typing
-#+begin_src latex
 
-In the following, $e :_{\uparrow} \tau}$ is an expression with inferrable type $\tau$ while $e :_{\downarrow} \tau}$ is checkable.
+In the following, \(\te\tyinfer \vt\) is an expression with inferrable type $\vt$ while \(e \tycheck \vt\) is checkable.
 
 \begin{mathpar}
 \centering
 
-\inferrule*[right=(Chk)] { \Gamma \vdash x :_{\uparrow} \tau }{ \Gamma \vdash x :_{\downarrow} \tau }
+\inferrule*[right=(Chk)] { \ctx \vdash x \tyinfer \vt }{ \ctx \vdash x \tycheck \vt }
 \and
 
 \inferrule*[right=(Ann)]
-  {\Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\
-   \Gamma \vdash e :_{\downarrow} \tau}
-  { \Gamma \vdash (e:\rho) :_{\uparrow} \tau }
+  {\ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\
+   \ctx \vdash\te\tycheck \vt}
+  { \ctx \vdash (e:\tty) \tyinfer \vt }
 \and
 
 
-\inferrule*[right=(Star)]{\\}{ \Gamma \vdash * :_{\uparrow} * }
+\inferrule*[right=(Star)]{ }{ \ctx \vdash * \tyinfer * }
 \and
 
 
-\inferrule*[right=(Var)] { \Gamma(x) = \tau }{ \Gamma \vdash x :_{\uparrow} \tau }
+\inferrule*[right=(Var)] { \ctx(x) = \vt }{ \ctx \vdash \te \tyinfer \vt }
 \and
 
 \inferrule*[right=(Lam)]
-  { \Gamma,x : \tau \vdash e :_{\downarrow} \tau' }
-  { \Gamma \vdash  \lambda x \rightarrow e :_{\downarrow} \Pi (x : \tau) . \tau'}
+  { \ctx,x : \vt \vdash\te\tycheck \vt' }
+  { \ctx \vdash  \lambda x \rightarrow\te\tycheck \vpi{x }{ \vt) }{} \vt'}
 \and
 
 \inferrule*[right=(Tuple)]
-  { \Gamma \vdash e :_{\downarrow} \tau \\  \Gamma \vdash e' :_{\downarrow} \tau'}
-  { \Gamma \vdash  (e,e') :_{\downarrow} \Sigma (x : \tau) . \tau'}
+  { \ctx \vdash\te\tycheck \vt \\  \ctx \vdash \te[2] \tycheck \vt'}
+  { \ctx \vdash  (e,\te[2]) \tycheck \Sigma (x : \vt) . \vt'}
 \and
 
 \inferrule*[right=(App)]
-  { \Gamma \vdash e :_{\uparrow}  \Pi (x:\tau).\tau'  \\  \Gamma \vdash e' :_{\downarrow} \tau \\ \tau'[x \mapsto e'] \Downarrow \tau'' }
-  { \Gamma \vdash e\ e' :_{\uparrow} \tau''}
+  { \ctx \vdash\te\tyinfer  \vpi{x}{\vt}{\vt'}  \\  \ctx \vdash \te[2] \tycheck \vt \\ \vt'[x \mapsto \te[2]] \evalsto \vt[3] }
+  { \ctx \vdash e\ \te[2] \tyinfer \vt[3]}
 \and
 
 \inferrule*[right=(Fst)]
-  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau'}
-  { \Gamma \vdash \text{fst}\ e :_{\uparrow} \tau}
+  { \ctx \vdash\te\tyinfer \vsig{x}{\vt}{\vt'}}
+  { \ctx \vdash \text{fst}\ \te\tyinfer \vt}
 \and
 
 \inferrule*[right=(Snd)]
-  { \Gamma \vdash e :_{\uparrow} \Sigma(x:\tau).\tau' \\ \tau'[x \mapsto \text{fst}\ e] \Downarrow \tau'' }
-  { \Gamma \vdash \text{snd}\ e:_{\uparrow} \tau''}
+  { \ctx \vdash\te\tyinfer \vsig{x}{\vt}{\vt[2]} \\ \vt[2][x \mapsto \text{fst}\ e] \evalsto \vt[3] }
+  { \ctx \vdash \text{snd}\ e\tyinfer \vt[3]}
 \and
 \inferrule*[right=(Pi)]
-   { \Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
-   { \Gamma \vdash \Pi (x : \rho).\rho' :_{\uparrow} * }
+   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx,x:\vt \vdash \tty[2] \tycheck * }
+   { \ctx \vdash \vpi{x }{ \tty}{\tty[2]} \tyinfer * }
 \label{ty:pi}
 \and
 
 \inferrule*[right=(Sigma)]
-   { \Gamma \vdash \rho :_{\downarrow} * \\ \rho \Downarrow \tau \\ \Gamma,x:\tau \vdash \rho' :_{\downarrow} * }
-   { \Gamma \vdash \Sigma (x : \rho).\rho' :_{\uparrow} * }
+   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx,x:\vt \vdash \tty[2] \tycheck * }
+   { \ctx \vdash \vsig{x}{\tty}{\tty[2]} \tyinfer * }
 \and
 \end{mathpar}
-
-
-#+end_src
 
 Une reformulation équivalentes des règles $\textsc{(Pi)}$ et $\textsc{(Sigma)}$, plus adaptée pour l'implémentation :
 
-#+begin_src latex
-
 \begin{mathpar}
 \inferrule*[right=(Pi)]
-   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma \vdash \rho' :_{\downarrow} \Pi(x:\tau).* }
-   { \Gamma \vdash \Pi (x : \rho).\rho' :_{\uparrow} * }
+   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx \vdash \tty[2] \tycheck \vpi{x}{\vt}{*} }
+   { \ctx \vdash \vpi{x }{ \tty}{\tty[2]} \tyinfer * }
 \and
 
 \inferrule*[right=(Sigma)]
-   { \Gamma \vdash \rho :_{\downarrow} * \quad \rho \Downarrow \tau \\ \Gamma \vdash \rho' :_{\downarrow} \Pi(x:\tau).* }
-   { \Gamma \vdash \Sigma (x : \rho).\rho' :_{\uparrow} * }
+   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx \vdash \tty[2] \tycheck \vpi{x}{\vt}{*} }
+   { \ctx \vdash \vsig{x }{ \tty}{\tty[2]} \tyinfer * }
 \and
 \end{mathpar}
-#+end_src
