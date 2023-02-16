@@ -1,6 +1,6 @@
 type t = { uid : int; name : string }
 
-let pp fmt a = Format.fprintf fmt "Atom(%s)" a.name
+let pp fmt a = Format.fprintf fmt "Atom(%s@%d)" a.name a.uid
 
 (** We want this to stay unique *)
 let global_reset, global_nextuid =
@@ -21,9 +21,15 @@ let cmp a1 a2 =
 
 let eq a1 a2 = cmp a1 a2 = 0
 let name a = a.name
+let uid a = a.uid
 
 module Quote = struct
-  let make i = { name = Printf.sprintf "<quote %d>" i; uid = -i - 1 }
+  let make i =
+    {
+      name = Printf.sprintf "<%c>" (char_of_int @@ (97 + i));
+      uid = -i - 1;
+    }
+
   let is_quote a = a.uid < 0
   let depth a = -a.uid - 1
 end
