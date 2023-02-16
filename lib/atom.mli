@@ -7,3 +7,9 @@ val eq : t -> t -> bool
 val name : t -> string
 val global_reset : unit -> unit
 val pp : Format.formatter -> t -> unit
+
+module Quote : sig
+  val make : int -> t
+  val is_quote : t -> bool
+  val depth : t -> int
+end
