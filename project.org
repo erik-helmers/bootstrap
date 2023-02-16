@@ -105,23 +105,6 @@
 
 #+end_src
 
-
-* NO Design et implémentation d'une syntaxe support
-
-
-L'objectif du sujet est de développer un certain moteur de typage. Pour commencer, on va donc créer un petit language interpreté qui servira de base pour pratiquer nos expérimentations.
-
-Pour rendre agréable le travail, on a ajouté de la syntaxe (=let id = ... in ...=, =let cons x y = x=, etc..) en veillant à ne pas ajouter de nouveau termes (par exemple les assignations sont juste des applications de fonctions).
-
-#+begin_quote
-letter   ::= A...Z | a...z
-
-number   ::= 0...9
-
-ident    ::= (letter|number|_) {letter|0...9|_|'}
-
-#+end_quote
-
 * Théorie
 
 ** Syntaxe
