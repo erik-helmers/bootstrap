@@ -1,4 +1,5 @@
-type atom = Atom.t
+type atom = Atom.t [@@deriving show]
+and 'a binder = 'a Binder.t [@@deriving show]
 
 type expr =
   | EFree of name
