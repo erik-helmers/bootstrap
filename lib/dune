@@ -1,0 +1,5 @@
+(library
+ (name scratch)
+ (libraries pprint)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.ord)))

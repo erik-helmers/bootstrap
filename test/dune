@@ -1,0 +1,3 @@
+(tests
+ (names types)
+ (libraries scratch alcotest))
