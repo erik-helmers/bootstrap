@@ -2,6 +2,7 @@ open Types
 
 let atom name = Atom.make name
 let var name = Free (atom name)
+let bool v = Bool v
 
 let binder name body =
   let atom = Atom.make name in
