@@ -31,14 +31,13 @@ end = struct
   let scoped_bind v s =
     unsafe_subst
       (fun i t -> if t = Bound i then Some v else None)
-      (Binder.unscoped s)
+      s
 
   (* Substitues Free a for Bound 0 in s  *)
   let scoped_unbind a t =
-    Binder.scoped
-    @@ unsafe_subst
-         (fun i t -> if t = Free a then Some (Bound i) else None)
-         t
+    unsafe_subst
+      (fun i t -> if t = Free a then Some (Bound i) else None)
+      t
 
   let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
   let close = Binder.close scoped_unbind

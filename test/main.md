@@ -19,9 +19,9 @@ Just checking that the syntax functions are working as expected.
 
 ```ocaml
 # binder "x" (fun x -> x);;
-- : term binder = {name = "x"; scoped = Scoped (Bound 0)}
+- : term binder = {name = "x"; scoped = Bound 0}
 # binder "x" (fun x -> var "x");;
-- : term binder = {name = "x"; scoped = Scoped (Free {uid = 3; name = "x"})}
+- : term binder = {name = "x"; scoped = Free {uid = 3; name = "x"}}
 ```
 
 Functions : 
@@ -30,20 +30,14 @@ Functions :
 # Atom.global_reset ();;
 - : unit = ()
 # fn "x" (fun x -> x);;
-- : term = Lam {name = "x"; scoped = Scoped (Bound 0)}
+- : term = Lam {name = "x"; scoped = Bound 0}
 # fn2 "x" "y" (fun x y -> x);;
-- : term =
-Lam
- {name = "x"; scoped = Scoped (Lam {name = "y"; scoped = Scoped (Bound 1)})}
+- : term = Lam {name = "x"; scoped = Lam {name = "y"; scoped = Bound 1}}
 # fn3 "x" "y" "z" (fun x y z -> x);;
 - : term =
 Lam
  {name = "x";
-  scoped =
-   Scoped
-    (Lam
-      {name = "y";
-       scoped = Scoped (Lam {name = "z"; scoped = Scoped (Bound 2)})})}
+  scoped = Lam {name = "y"; scoped = Lam {name = "z"; scoped = Bound 2}}}
 ```
 
 Pi and sigma terms : 
@@ -53,11 +47,9 @@ Pi and sigma terms :
 # let star = var "*";;
 val star : term = Free {uid = 1; name = "*"}
 # pi "x" star (fun x -> x);;
-- : term =
-Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Scoped (Bound 0)})
+- : term = Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Bound 0})
 # sigma "x" star (fun x -> x);;
-- : term =
-Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Scoped (Bound 0)})
+- : term = Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Bound 0})
 ```
 We can be pretty confident in our constructors now. Let's enable pretty printing.
 
@@ -94,9 +86,9 @@ val x : atom = x@1
 # Atom.global_reset();;
 - : unit = ()
 # let id = binder "x" (fun x -> x);;
-val id : term binder = {name = "x"; scoped = Scoped [0]}
+val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
-val cons : term binder = {name = "x"; scoped = Scoped (fun y@4 -> [1])}
+val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 # bind id (var "a");;
 - : term = a@5
 # bind cons (var "b");;
@@ -109,9 +101,9 @@ val cons : term binder = {name = "x"; scoped = Scoped (fun y@4 -> [1])}
 # Atom.global_reset();;
 - : unit = ()
 # let id = binder "x" (fun x -> x);;
-val id : term binder = {name = "x"; scoped = Scoped [0]}
+val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
-val cons : term binder = {name = "x"; scoped = Scoped (fun y@4 -> [1])}
+val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 # open_ id;;
 - : atom * term = (x@5, x@5)
 # open_ cons;;
@@ -130,9 +122,9 @@ val id : term = x@1
 # let cons = fn "y" (fun y -> Free x);;
 val cons : term = (fun y@3 -> x@1)
 # close x id;;
-- : term binder = {name = "x"; scoped = Scoped [0]}
+- : term binder = {name = "x"; scoped = [0]}
 # close x cons;;
-- : term binder = {name = "x"; scoped = Scoped (fun y@4 -> [1])}
+- : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 ```
 
 
