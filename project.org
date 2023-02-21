@@ -8,6 +8,7 @@
 #+latex_header: \usepackage{amsmath,amssymb,amsthm,textcomp}
 #+latex_header: \usepackage{listofitems}
 #+latex_header: \usepackage{bssetup}
+#+latex_header: \usepackage{xparse}
 
 
 #+name: bssetup
@@ -19,93 +20,114 @@
 % Substitution
 \newcommand{\varlist}[3]{% 1 = symbol list, 2 = default command, 3 = index
   \ifnum #3>\listlen{#1}[]%
-     #2{#3}%
+  #2{#3}%
   \else #1[#3]
   \fi
 }
 
-% Term symbols
-
-% Expression term identifiers
-\readlist*\tesyms{e,e',e''}
-\newcommand{\tedflt}[1]{e_{#1}}
-\newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
-
-% Term type identifiers
-\readlist*\ttysyms{\sigma, \sigma', \sigma''}
-\newcommand{\ttydflt}[1]{\sigma_{#1}}
-\newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
-
-% Term kind identifiers
-\readlist*\tksyms{\kappa, \kappa', \kappa''}
-\newcommand{\tkdflt}[1]{\kappa_{#1}}
-\newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
-
-% Term variables (used in binders)
-\readlist*\tvsyms{x, y, z}
-\newcommand{\tvdflt}[1]{x_{#1}}
-\newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
+% Declarations
 
 
-% Lambda
-\newcommand{\tlam}[2]{\lambda #1 \rightarrow #2}
-% Tuple
-\newcommand{\ttup}[2]{(#1,#2)}
-% Fst
-\newcommand{\tfst}[1]{\text{fst}\ #1}
-% Snd
-\newcommand{\tsnd}[1]{\text{snd}\ #1}
-% Pi
-\newcommand{\tpi}[3]{\Pi(#1:#2).#3}
-% Sigma
-\newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
-% Type of types
-\newcommand{\tstar}{\star}
+\newcounter{declfirstrule} % 0 : this is the first rule / 1 : false
 
 
-% Value symbols
+\newcommand{\drule}[2]{%
+  \ifnum\value{declfirstrule}=0\stepcounter{declfirstrule}
+    &::=& #1 &\quad \text{#2}\\
+  \else
+    &|& #1 &\quad \text{#2}\\
+  \fi
+}
 
-% Value identifiers
-\readlist*\vesyms{\nu,\nu',\nu''}
-\newcommand{\vedflt}[1]{\nu_{#1}}
-\newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
+\newenvironment{decl}[1]{
+  \setcounter{declfirstrule}{0}
+  \begin{array}{lcll}
+    #1
+    }{\end{array}}
 
-% Type identifiers
-\readlist*\vtysyms{\tau, \tau', \tau''}
-\newcommand{\vtydflt}[1]{\tau_{#1}}
-\newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
+  % Term symbols
 
-% Neutral
-\readlist*\vnsyms{n, n', n''}
-\newcommand{\vndflt}[1]{n_{#1}}
-\newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
 
-% Variables
-\readlist*\vvsyms{x, y, z}
-\newcommand{\vvdflt}[1]{x_{#1}}
-\newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
+  % Expression term identifiers
+  \readlist*\tesyms{e,e',e''}
+  \newcommand{\tedflt}[1]{e_{#1}}
+  \newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
 
-% Lambda
-\newcommand{\vlam}[2]{\lambda #1 \rightarrow #2}
-% Tuple
-\newcommand{\vtup}[2]{(#1,#2)}
-% Pi
-\newcommand{\vpi}[3]{\Pi(#1:#2).#3}
-% Sigma
-\newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
-% Type of types
-\newcommand{\vstar}{\star}
+  % Term type identifiers
+  \readlist*\ttysyms{\sigma, \sigma', \sigma''}
+  \newcommand{\ttydflt}[1]{\sigma_{#1}}
+  \newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
 
-% Symbols
+  % Term kind identifiers
+  \readlist*\tksyms{\kappa, \kappa', \kappa''}
+  \newcommand{\tkdflt}[1]{\kappa_{#1}}
+  \newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
 
-\newcommand{\evalsto}{\Downarrow}
-\newcommand{\tycheck}{:_{\downarrow}}
-\newcommand{\tyinfer}{:_{\uparrow}}
+  % Term variables (used in binders)
+  \readlist*\tvsyms{x, y, z}
+  \newcommand{\tvdflt}[1]{x_{#1}}
+  \newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
 
-\newcommand{\ctx}{\Gamma}
-\newcommand{\ctxmap}{\vdash}
-\newcommand{\ctxEmpty}{\Gamma}
-\newcommand{\ctxValid}[1]{\text{valid}(#1)}
+
+  % Lambda
+  \newcommand{\tlam}[2]{\lambda #1 \rightarrow #2}
+  % Tuple
+  \newcommand{\ttup}[2]{(#1,#2)}
+  % Fst
+  \newcommand{\tfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\tsnd}[1]{\text{snd}\ #1}
+  % Pi
+  \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
+  % Sigma
+  \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
+  % Type of types
+  \newcommand{\tstar}{\star}
+
+
+  % Value symbols
+
+  % Value identifiers
+  \readlist*\vesyms{\nu,\nu',\nu''}
+  \newcommand{\vedflt}[1]{\nu_{#1}}
+  \newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
+
+  % Type identifiers
+  \readlist*\vtysyms{\tau, \tau', \tau''}
+  \newcommand{\vtydflt}[1]{\tau_{#1}}
+  \newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
+
+  % Neutral
+  \readlist*\vnsyms{n, n', n''}
+  \newcommand{\vndflt}[1]{n_{#1}}
+  \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+  % Variables
+  \readlist*\vvsyms{x, y, z}
+  \newcommand{\vvdflt}[1]{x_{#1}}
+  \newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
+
+  % Lambda
+  \newcommand{\vlam}[2]{\lambda #1 \rightarrow #2}
+  % Tuple
+  \newcommand{\vtup}[2]{(#1,#2)}
+  % Pi
+  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+  % Sigma
+  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+  % Type of types
+  \newcommand{\vstar}{\star}
+
+  % Symbols
+
+  \newcommand{\evalsto}{\Downarrow}
+  \newcommand{\tycheck}{:_{\downarrow}}
+  \newcommand{\tyinfer}{:_{\uparrow}}
+
+  \newcommand{\ctx}{\Gamma}
+  \newcommand{\ctxmap}{\vdash}
+  \newcommand{\ctxEmpty}{\Gamma}
+  \newcommand{\ctxValid}[1]{\text{valid}(#1)}
 
 
 #+end_src
@@ -114,18 +136,18 @@
 
 ** Syntaxe
 
-\[\begin{array}{lcll}
-\te, \tty, \tk &::=&\te: \tty                  &\text{annotated term} \\
-         &|& \tv                       &\text{variable} \\
-         &|& \tlam{x}{\te}           &\text{lambda} \\
-         &|& \te\ \te[2]               &\text{application} \\
-         &|& \tpi{x}{\tty}{\tty[2]}  &\text{pi type} \\
-         &|& (\te, \te[2])             &\text{tuple} \\
-         &|& \tfst{\te}              &\text{fst} \\
-         &|& \tsnd{\te}              &\text{snd} \\
-         &|& \tsig{\tv}{\tty}{\tty[2]} &\text{sigma type} \\
-         &|&  \tstar                      &\text{type of types} \\
-\end{array}
+\[\begin{decl}{\te, \tty, \tk}
+ drule{\te: \tty                 }{annotated term}
+ drule{\tv                       }{variable}
+ drule{\tlam{x}{\te}             }{lambda}
+ drule{\te\ \te[2]               }{application}
+ drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
+ drule{(\te, \te[2])             }{tuple}
+ drule{\tfst{\te}                }{fst}
+ drule{\tsnd{\te}                }{snd}
+ drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
+ drule{\tstar                    }{type of types}
+\end{decl}
  \]
 
 where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
@@ -133,11 +155,10 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 
 ** Contexte
 
-\[\begin{array}{lcll}
-\ctx &::=&\epsilon                  &\text{empty context}     \\
-         &|& \ctx, \tv:\vty   &\text{adding a variable} \\
-\end{array}
-\]
+\[\begin{decl}{\ctx}
+    \drule{\epsilon}{empty context}
+    \drule{\ctx, \tv:\vty}{adding a variable}
+\end{decl}\]
 
 \begin{mathpar}
 \inferrule*{  }{ \ctxValid{\epsilon} }
@@ -148,16 +169,14 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 
 ** Evaluation
 
-
-\[\begin{array}{lcll}
-\ve, \vty &::=& \vn                       &\text{neutral term} \\
-         & | & \vlam {\vv} {\ve}         &\text{lambda} \\
-         & | & \vtup {\ve} {\ve[2]}      &\text{tuple} \\
-         & | & \vstar                    &\text{type of types} \\
-         & | & \vpi {\tv} {\vty} {\vty[2]} &\text{dependent function space} \\
-         & | & \vsig {\tv}{\vty}{\vty[2]}  &\text{dependent pair space } \\
-\end{array}
-\]
+\[\begin{decl}{\ve, \vty}
+    \drule{\vn                         }{neutral term}
+    \drule{\vlam {\vv} {\ve}           }{lambda}
+    \drule{\vtup {\ve} {\ve[2]}        }{tuple}
+    \drule{\vstar                      }{type of types}
+    \drule{\vpi {\tv} {\vty} {\vty[2]} }{dependent function space}
+    \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
+\end{decl}\]
 
 \begin{mathpar}
 
