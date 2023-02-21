@@ -67,15 +67,15 @@ Here is a reminder of the format for different terms.
 # Bound 0;;
 - : term = [0]
 # let x = atom "x";;
-val x : atom = x@1
+val x : atom = x
 # Free x;;
-- : term = x@1
+- : term = x
 # fn "x" (fun x -> x);;
-- : term = (fun x@3 -> x@3)
+- : term = (fn x -> x)
 # pi "x" (var "*") (fun x -> x);;
-- : term = Π(x@6 : *@4).x@6
+- : term = Π(x : *).x
 # sigma  "x" (var "*") (fun x -> x);;
-- : term = Π(x@9 : *@7).x@9
+- : term = Π(x : *).x
 ```
 # Types
 ## Bindings
@@ -88,11 +88,11 @@ val x : atom = x@1
 # let id = binder "x" (fun x -> x);;
 val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
-val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
+val cons : term binder = {name = "x"; scoped = (fn y -> [1])}
 # bind id (var "a");;
-- : term = a@5
+- : term = a
 # bind cons (var "b");;
-- : term = (fun y@7 -> b@6)
+- : term = (fn y -> b)
 ```
 
 ### Open
@@ -103,11 +103,11 @@ val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 # let id = binder "x" (fun x -> x);;
 val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
-val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
+val cons : term binder = {name = "x"; scoped = (fn y -> [1])}
 # open_ id;;
-- : atom * term = (x@5, x@5)
+- : atom * term = (x, x)
 # open_ cons;;
-- : atom * term = (x@6, (fun y@7 -> x@6))
+- : atom * term = (x, (fn y -> x))
 ```
 ### Close
 
@@ -116,15 +116,15 @@ val cons : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 # Atom.global_reset();;
 - : unit = ()
 # let x = atom "x";;
-val x : atom = x@1
+val x : atom = x
 # let id = Free x;;
-val id : term = x@1
+val id : term = x
 # let cons = fn "y" (fun y -> Free x);;
-val cons : term = (fun y@3 -> x@1)
+val cons : term = (fn y -> x)
 # close_ x id;;
 - : term binder = {name = "x"; scoped = [0]}
 # close_ x cons;;
-- : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
+- : term binder = {name = "x"; scoped = (fn y -> [1])}
 ```
 
 

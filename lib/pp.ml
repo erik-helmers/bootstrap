@@ -13,7 +13,7 @@ let of_pp pp t =
 let atom = of_pp Atom.pp
 
 let lam arg body =
-  parens @@ flow (break 1) [ string "fun"; arg; string "->"; body ]
+  parens @@ flow (break 1) [ string "fn"; arg; string "->"; body ]
 
 let pi x t t' =
   flow (break 0) [ pi_sym; parens (x ^/^ colon ^/^ t); dot; t' ]

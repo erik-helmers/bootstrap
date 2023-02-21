@@ -2,7 +2,8 @@
 
 type t = { uid : int; name : string }
 
-let pp fmt a = Format.fprintf fmt "%s@%d" a.name a.uid
+let pp fmt a = Format.fprintf fmt "%s" a.name
+let pp_dump fmt a = Format.fprintf fmt "%s@%d" a.name a.uid
 
 let global_reset, global_nextuid =
   let count = ref 0 in
