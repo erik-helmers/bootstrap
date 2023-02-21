@@ -6,7 +6,11 @@ type term =
   | Bound of int
   | Bool of bool
   | Lam of term binder
+  | App of term * term
   | Pi of term * term binder
+  | Tuple of term * term
+  | Fst of term
+  | Snd of term
   | Sigma of term * term binder
 
 let traverse map_free map_bound term =
@@ -16,7 +20,11 @@ let traverse map_free map_bound term =
     | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
     | Bool _ -> term
     | Lam b -> Lam (Binder.weaken aux i b)
+    | App (t, t') -> App (aux i t, aux i t')
     | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)
+    | Tuple (t, t') -> Tuple (aux i t, aux i t')
+    | Fst t -> Fst (aux i t)
+    | Snd t -> Snd (aux i t)
     | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
   in
   aux 0 term

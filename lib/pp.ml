@@ -21,6 +21,11 @@ let pi x t t' =
 let sigma x t t' =
   flow (break 0) [ sigma_sym; parens (x ^/^ colon ^/^ t); dot; t' ]
 
+let app t t' = t ^/^ t'
+let tuple t t' = OCaml.tuple [ t; t' ]
+let fst t = app (string "fst") t
+let snd t = app (string "snd") t
+
 let rec term e =
   match e with
   | Free a -> atom a
@@ -30,12 +35,16 @@ let rec term e =
   | Lam f ->
       let arg, body = open_ f in
       lam (atom arg) (term body)
+  | App (t, t') -> term t ^/^ term t'
   | Pi (t, t') ->
       let arg, body = open_ t' in
       pi (atom arg) (term t) (term body)
+  | Tuple (t, t') -> tuple (term t) (term t')
+  | Fst t -> fst (term t)
+  | Snd t -> snd (term t)
   | Sigma (t, t') ->
       let arg, body = open_ t' in
-      pi (atom arg) (term t) (term body)
+      sigma (atom arg) (term t) (term body)
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

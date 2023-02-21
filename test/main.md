@@ -45,7 +45,8 @@ val star : term = Free {uid = 10; name = "*"}
 # pi "x" star (fun x -> x);;
 - : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
 # sigma "x" star (fun x -> x);;
-- : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term =
+Sigma (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
 ```
 We can be pretty confident in our constructors now. Let's enable pretty printing.
 
@@ -64,12 +65,25 @@ Here is a reminder of the format for different terms.
 val x : atom = x
 # Free x;;
 - : term = x
+# Bool true, Bool false;;
+- : term * term = (true, false)
 # fn "x" (fun x -> x);;
 - : term = (fn x -> x)
+# app (var "f") (var "x");;
+- : term = f
+x
 # pi "x" (var "*") (fun x -> x);;
 - : term = Π(x : *).x
+# tuple (var "x", var "y");;
+- : term = (x, y)
+# first (var "t");;
+- : term = fst
+t
+# second (var "t");;
+- : term = snd
+t
 # sigma  "x" (var "*") (fun x -> x);;
-- : term = Π(x : *).x
+- : term = Σ(x : *).x
 ```
 # Types
 ## Bindings
