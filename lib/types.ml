@@ -14,29 +14,30 @@ module Binding : sig
   val close : atom -> term -> term binder
   val bind : term binder -> term -> term
 end = struct
-  let unsafe_subst map term =
-    let rec aux i term =
-      match map i term with
-      | Some v -> v
-      | None -> (
-          match term with
-          | Free _ | Bound _ | Bool _ -> term
-          | Lam f -> Lam (Binder.weaken aux i f)
-          | Pi (t, f) -> Pi (t, Binder.weaken aux i f)
-          | Sigma (t, f) -> Sigma (t, Binder.weaken aux i f))
+  let traverse map_free map_bound term =
+    let rec aux i (term : term) =
+      match term with
+      | Free a -> ( match map_free i a with Some t -> t | _ -> term)
+      | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
+      | Bool _ -> term
+      | Lam b -> Lam (Binder.weaken aux i b)
+      | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)
+      | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
     in
     aux 0 term
 
   (* Substitues Bound 0 for v in s  *)
   let scoped_bind v s =
-    unsafe_subst
-      (fun i t -> if t = Bound i then Some v else None)
+    traverse
+      (fun _ _ -> None)
+      (fun i j -> if i = j then Some v else None)
       s
 
   (* Substitues Free a for Bound 0 in s  *)
   let scoped_unbind a t =
-    unsafe_subst
-      (fun i t -> if t = Free a then Some (Bound i) else None)
+    traverse
+      (fun i b -> if Atom.eq a b then Some (Bound i) else None)
+      (fun _ _ -> None)
       t
 
   let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
