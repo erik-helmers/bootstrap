@@ -88,19 +88,6 @@ t
 # Types
 ## Bindings
          
-### Bind
-    
-```ocaml
-# let id = binder "x" (fun x -> x);;
-val id : term binder = {name = "x"; scoped = [0]}
-# let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
-val cons : term binder = {name = "x"; scoped = (fn y -> [1])}
-# bind id (var "a");;
-- : term = a
-# bind cons (var "b");;
-- : term = (fn y -> b)
-```
-
 ### Open
 
 ```ocaml

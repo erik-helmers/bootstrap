@@ -42,4 +42,3 @@ let scoped_unbind a t =
 
 let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
 let close_ = Binder.close_ scoped_unbind
-let bind = Binder.subst scoped_bind
