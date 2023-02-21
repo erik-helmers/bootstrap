@@ -118,4 +118,79 @@ val cons : term = (fn y -> x)
 - : term binder = {name = "x"; scoped = (fn y -> [1])}
 ```
 
+# Interpret 
 
+## Pi 
+
+```ocaml
+# open Interpret;;
+# let id = fn "x" (fun x -> x);;
+val id : term = (fn x -> x)
+# let cons = fn2 "x" "y" (fun x y -> x);;
+val cons : term = (fn x -> (fn y -> x))
+# interpret id;;
+- : value = VLam <fun>
+# interpret (app id (var "a"));;
+- : value = VNeu (NVar a)
+# interpret (app2 cons (var "b") (var "c"));;
+- : value = VNeu (NVar b)
+# interpret (app (var "f") (var "x"));;
+- : value = VNeu (NApp (NVar f, VNeu (NVar x)))
+# interpret (pi "x" (var "star") (fun x -> x));;
+- : value = VPi (VNeu (NVar star), <fun>)
+```
+
+## Sigma 
+```ocaml
+# let t = tuple (var "x",var "y");;
+val t : term = (x, y)
+# interpret t ;;
+- : value = VTuple (VNeu (NVar x), VNeu (NVar y))
+# interpret (first (var "t"));;
+- : value = VNeu (NFst (NVar t))
+# interpret (second (var "t"));;
+- : value = VNeu (NSnd (NVar t))
+# interpret (first t);;
+- : value = VNeu (NVar x)
+# interpret (second t);;
+- : value = VNeu (NVar y)
+# interpret (sigma "x" (var "star") (fun x -> x));;
+- : value = VSigma (VNeu (NVar star), <fun>)
+```
+
+# Quote 
+
+## Pi 
+
+```ocaml
+# open Quote;;
+# let n = NVar (atom "n");;
+val n : neutral = NVar n
+# let id = VLam(fun x -> x);;
+val id : value = VLam <fun>
+# let cons = VLam(fun x -> VLam (fun y -> x));;
+val cons : value = VLam <fun>
+# quote id;;
+- : term = (fn q0 -> q0)
+# quote cons;;
+- : term = (fn q0 -> (fn q1 -> q0))
+# quote (VNeu (NApp(n,id)));;
+- : term = n
+(fn q0 -> q0)
+```
+
+## Sigma 
+```ocaml
+# let t = VTuple(id, cons);;
+val t : value = VTuple (VLam <fun>, VLam <fun>)
+# let n = NVar (atom "n");;
+val n : neutral = NVar n
+# quote t ;;
+- : term = ((fn q0 -> q0), (fn q0 -> (fn q1 -> q0)))
+# quote (VNeu (NFst n));;
+- : term = fst
+n
+# quote (VNeu (NSnd n));;
+- : term = snd
+n
+```
