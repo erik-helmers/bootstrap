@@ -27,8 +27,6 @@ Just checking that the syntax functions are working as expected.
 Functions : 
 
 ```ocaml
-# Atom.global_reset ();;
-- : unit = ()
 # fn "x" (fun x -> x);;
 - : term = Lam {name = "x"; scoped = Bound 0}
 # fn2 "x" "y" (fun x y -> x);;
@@ -42,14 +40,12 @@ Lam
 
 Pi and sigma terms : 
 ```ocaml
-# Atom.global_reset ();;
-- : unit = ()
 # let star = var "*";;
-val star : term = Free {uid = 1; name = "*"}
+val star : term = Free {uid = 10; name = "*"}
 # pi "x" star (fun x -> x);;
-- : term = Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
 # sigma "x" star (fun x -> x);;
-- : term = Pi (Free {uid = 1; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
 ```
 We can be pretty confident in our constructors now. Let's enable pretty printing.
 
@@ -62,8 +58,6 @@ We can be pretty confident in our constructors now. Let's enable pretty printing
 
 Here is a reminder of the format for different terms.
 ```ocaml
-# Atom.global_reset ();;
-- : unit = ()
 # Bound 0;;
 - : term = [0]
 # let x = atom "x";;
@@ -83,8 +77,6 @@ val x : atom = x
 ### Bind
     
 ```ocaml
-# Atom.global_reset();;
-- : unit = ()
 # let id = binder "x" (fun x -> x);;
 val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
@@ -98,8 +90,6 @@ val cons : term binder = {name = "x"; scoped = (fn y -> [1])}
 ### Open
 
 ```ocaml
-# Atom.global_reset();;
-- : unit = ()
 # let id = binder "x" (fun x -> x);;
 val id : term binder = {name = "x"; scoped = [0]}
 # let cons = binder "x" (fun x -> fn "y" (fun y -> x));;
@@ -113,8 +103,6 @@ val cons : term binder = {name = "x"; scoped = (fn y -> [1])}
 
 ```ocaml
 
-# Atom.global_reset();;
-- : unit = ()
 # let x = atom "x";;
 val x : atom = x
 # let id = Free x;;
