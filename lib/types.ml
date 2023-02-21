@@ -1,5 +1,5 @@
 type atom = Atom.t
-and 'a binder = 'a Binder.t
+type 'a binder = 'a Binder.t
 
 type term =
   | Free of atom
@@ -9,40 +9,29 @@ type term =
   | Pi of term * term binder
   | Sigma of term * term binder
 
-module Binding : sig
-  val open_ : term binder -> atom * term
-  val close : atom -> term -> term binder
-  val bind : term binder -> term -> term
-end = struct
-  let traverse map_free map_bound term =
-    let rec aux i (term : term) =
-      match term with
-      | Free a -> ( match map_free i a with Some t -> t | _ -> term)
-      | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
-      | Bool _ -> term
-      | Lam b -> Lam (Binder.weaken aux i b)
-      | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)
-      | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
-    in
-    aux 0 term
+let traverse map_free map_bound term =
+  let rec aux i (term : term) =
+    match term with
+    | Free a -> ( match map_free i a with Some t -> t | _ -> term)
+    | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
+    | Bool _ -> term
+    | Lam b -> Lam (Binder.weaken aux i b)
+    | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)
+    | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
+  in
+  aux 0 term
 
-  (* Substitues Bound 0 for v in s  *)
-  let scoped_bind v s =
-    traverse
-      (fun _ _ -> None)
-      (fun i j -> if i = j then Some v else None)
-      s
+(* Substitues Bound 0 for v in s  *)
+let scoped_bind v s =
+  traverse (fun _ _ -> None) (fun i j -> if i = j then Some v else None) s
 
-  (* Substitues Free a for Bound 0 in s  *)
-  let scoped_unbind a t =
-    traverse
-      (fun i b -> if Atom.eq a b then Some (Bound i) else None)
-      (fun _ _ -> None)
-      t
+(* Substitues Free a for Bound 0 in s  *)
+let scoped_unbind a t =
+  traverse
+    (fun i b -> if Atom.eq a b then Some (Bound i) else None)
+    (fun _ _ -> None)
+    t
 
-  let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
-  let close = Binder.close scoped_unbind
-  let bind = Binder.subst scoped_bind
-end
-
-include Binding
+let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
+let close_ = Binder.close_ scoped_unbind
+let bind = Binder.subst scoped_bind

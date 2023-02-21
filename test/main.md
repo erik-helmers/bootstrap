@@ -121,9 +121,9 @@ val x : atom = x@1
 val id : term = x@1
 # let cons = fn "y" (fun y -> Free x);;
 val cons : term = (fun y@3 -> x@1)
-# close x id;;
+# close_ x id;;
 - : term binder = {name = "x"; scoped = [0]}
-# close x cons;;
+# close_ x cons;;
 - : term binder = {name = "x"; scoped = (fun y@4 -> [1])}
 ```
 

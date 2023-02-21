@@ -6,7 +6,7 @@ let bool v = Bool v
 
 let binder name body =
   let atom = Atom.make name in
-  close atom (body (Free atom))
+  close_ atom (body (Free atom))
 
 let fn x body = Lam (binder x body)
 let fn2 x y body = fn x (fun x -> fn y (fun y -> body x y))
