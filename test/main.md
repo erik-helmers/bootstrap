@@ -194,3 +194,27 @@ n
 - : term = snd
 n
 ```
+
+
+# Norm
+
+```ocaml
+# open Norm;;
+# let id = fn "x" (fun x -> x);;
+val id : term = (fn x -> x)
+# norm id;;
+- : term = (fn q0 -> q0)
+# let pair = fn "x" (fun x -> tuple(x,x));;
+val pair : term = (fn x -> (x, x))
+# norm pair;;
+- : term = (fn q0 -> (q0, q0))
+# let weird_id = fn "x" (fun x -> first (app pair x));;
+val weird_id : term = (fn x -> fst (fn x -> (x, x)) x)
+# norm weird_id;;
+- : term = (fn q0 -> q0)
+# eq id weird_id;;
+- : bool = false
+# norm_eq id weird_id;;
+- : bool = true
+```
+
