@@ -32,8 +32,8 @@
 \newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
 
 % Term type identifiers
-\readlist*\ttysyms{\rho, \rho', \rho''}
-\newcommand{\ttydflt}[1]{\rho_{#1}}
+\readlist*\ttysyms{\sigma, \sigma', \sigma''}
+\newcommand{\ttydflt}[1]{\sigma_{#1}}
 \newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
 
 % Term kind identifiers
@@ -41,7 +41,7 @@
 \newcommand{\tkdflt}[1]{\kappa_{#1}}
 \newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
 
-% Term kind identifiers
+% Term variables (used in binders)
 \readlist*\tvsyms{x, y, z}
 \newcommand{\tvdflt}[1]{x_{#1}}
 \newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
@@ -71,14 +71,19 @@
 \newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
 
 % Type identifiers
-\readlist*\vtsyms{\tau, \tau', \tau''}
-\newcommand{\vtdflt}[1]{\tau_{#1}}
-\newcommand{\vt}[1][1]{\varlist{\vtsyms}{\vtdflt}{#1}}
+\readlist*\vtysyms{\tau, \tau', \tau''}
+\newcommand{\vtydflt}[1]{\tau_{#1}}
+\newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
 
 % Neutral
 \readlist*\vnsyms{n, n', n''}
 \newcommand{\vndflt}[1]{n_{#1}}
 \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+% Variables
+\readlist*\vvsyms{x, y, z}
+\newcommand{\vvdflt}[1]{x_{#1}}
+\newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
 
 % Lambda
 \newcommand{\vlam}[2]{\lambda #1 \rightarrow #2}
@@ -110,98 +115,98 @@
 ** Syntaxe
 
 \[\begin{array}{lcll}
-e, \rho, \kappa &::=&\te: \rho                  &\text{annotated term} \\
-         &|& x                       &\text{variable} \\
+\te, \tty, \tk &::=&\te: \tty                  &\text{annotated term} \\
+         &|& \tv                       &\text{variable} \\
          &|& \tlam{x}{\te}           &\text{lambda} \\
-         &|& e\ \te[2]               &\text{application} \\
+         &|& \te\ \te[2]               &\text{application} \\
          &|& \tpi{x}{\tty}{\tty[2]}  &\text{pi type} \\
-         &|& (e, \te[2])             &\text{tuple} \\
+         &|& (\te, \te[2])             &\text{tuple} \\
          &|& \tfst{\te}              &\text{fst} \\
          &|& \tsnd{\te}              &\text{snd} \\
-         &|& \tsig{x}{\tty}{\tty[2]} &\text{sigma type} \\
-         &|&  *                      &\text{type of types} \\
+         &|& \tsig{\tv}{\tty}{\tty[2]} &\text{sigma type} \\
+         &|&  \tstar                      &\text{type of types} \\
 \end{array}
  \]
 
-where $e$, $\rho$, $\kappa$ represent general expressions, types and kinds respectively.
+where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
 
 
 ** Contexte
 
 \[\begin{array}{lcll}
 \ctx &::=&\epsilon                  &\text{empty context}     \\
-         &|& \ctx, \tv:\vt   &\text{adding a variable} \\
+         &|& \ctx, \tv:\vty   &\text{adding a variable} \\
 \end{array}
 \]
 
 \begin{mathpar}
 \inferrule*{  }{ \ctxValid{\epsilon} }
 \inferrule*
-    { \ctxValid{\ctx} \\ \ctx \ctxmap \vt \tycheck \vstar }
-    { \ctxValid{\ctx, \tv : \vt} }
+    { \ctxValid{\ctx} \\ \ctx \ctxmap \vty \tycheck \vstar }
+    { \ctxValid{\ctx, \tv : \vty} }
 \end{mathpar}
 
 ** Evaluation
 
 
 \[\begin{array}{lcll}
-\ve, \vt &::=& \vn                       &\text{neutral term} \\
-         & | & \vlam {\tv} {\ve}         &\text{lambda} \\
+\ve, \vty &::=& \vn                       &\text{neutral term} \\
+         & | & \vlam {\vv} {\ve}         &\text{lambda} \\
          & | & \vtup {\ve} {\ve[2]}      &\text{tuple} \\
          & | & \vstar                    &\text{type of types} \\
-         & | & \vpi {\tv} {\vt} {\vt[2]} &\text{dependent function space} \\
-         & | & \vsig {\tv}{\vt}{\vt[2]}  &\text{dependent pair space } \\
+         & | & \vpi {\tv} {\vty} {\vty[2]} &\text{dependent function space} \\
+         & | & \vsig {\tv}{\vty}{\vty[2]}  &\text{dependent pair space } \\
 \end{array}
 \]
 
 \begin{mathpar}
 
 
-\inferrule*[right=(Star)] {\\} { \tstar \evalsto *} \and
+\inferrule*[right=(Star)] {\\} { \tstar \evalsto \vstar} \and
 
-\inferrule*[right=(Var)]{\\}{ x \evalsto x} \and
+\inferrule*[right=(Var)]{\\}{ \tv \evalsto \vv} \and
 
 \inferrule*[right=(Ann)]
-  {\te\evalsto \ve}
-  {\te: \rho \evalsto \ve}
+  {\te \evalsto \ve}
+  {\te: \tty \evalsto \ve}
 \and
 
 \inferrule*[right=(Lam)]
     {\te\evalsto \ve }
-    { \lambda x \rightarrow\te\evalsto \lambda x \rightarrow \ve}
+    { \tlam{\tv}{\te} \evalsto \vlam{x}{\ve}}
 \and
 \inferrule*[right=(Tuple)]
     {\te\evalsto \ve \\ \te[2] \evalsto \ve[2] }
-    { (e, \te[2]) \evalsto (\ve, \ve[2])}
+    { (\te, \te[2]) \evalsto (\ve, \ve[2])}
 \and
 
 \inferrule*[right=(App)]
-  {e \evalsto \lambda x \rightarrow \ve \\ \ve[1][ x \mapsto \te[2]] \evalsto \ve[2]}
-  { e\ \te[2] \evalsto \ve[2]}
+  {\te \evalsto \vlam{\vv}{\ve} \\ \ve[1][ x \mapsto \te[2]] \evalsto \ve[2]}
+  { \te\ \te[2] \evalsto \ve[2]}
 \and
 \inferrule*[right=(NApp)]
-  {e \evalsto n \\ \te[2] \evalsto \ve[2]}
-  {e \ \te[2] \evalsto n\ \ve[2]}
+  {\te \evalsto \vn \\ \te[2] \evalsto \ve[2]}
+  {\te \ \te[2] \evalsto \vn\ \ve[2]}
 \and
 
 \inferrule*[right=(Fst)]
-  {e \evalsto (\ve ,\ve[2])}
-  { \text{fst}\ \te\evalsto \ve}
+  {\te  \evalsto (\ve ,\ve[2])}
+  { \tfst{\te} \evalsto \ve}
 \and
 
 \inferrule*[right=(Snd)]
-  {e \evalsto (\ve,\ve[2])}
-  { \text{snd}\ \te \evalsto \ve[2]}
+  {\te \evalsto (\ve,\ve[2])}
+  { \tsnd{\te} \evalsto \ve[2]}
 \and
 
 \inferrule*[right=(Pi)]
-  {\rho \evalsto \vt \\ \rho' \evalsto \vt'}
-  {\vpi{x : \rho).\rho' \evalsto \Pi (x }{ \vt}{\vt'}}
+  {\tty \evalsto \vty \\ \tty[2] \evalsto \vty[2]}
+  {\tpi{\tv}{\tty}{\tty[2]} \evalsto \vpi{\vv}{\vty}{\vty[2]}}
 \and
 
 \inferrule*[right=(Sigma)]
-  {\rho \evalsto \vt \\ \rho' \evalsto \vt'}
-  {\vsig{x : \rho).\rho' \evalsto \Sigma (x }{ \vt}{\vt'}}
+  {\tty \evalsto \vty \\ \tty[2] \evalsto \vty[2]}
+  {\tsig{\tv}{\tty}{\tty[2]} \evalsto \vsig{\vv}{\vty}{\vty[2]}}
 \and
 
 
@@ -210,61 +215,61 @@ where $e$, $\rho$, $\kappa$ represent general expressions, types and kinds respe
 
 ** Typing
 
-In the following, \(\te\tyinfer \vt\) is an expression with inferrable type $\vt$ while \(e \tycheck \vt\) is checkable.
+In the following, \(\te\tyinfer \vty\) is an expression with inferrable type $\vty$ while \(e \tycheck \vty\) is checkable.
 
 \begin{mathpar}
 \centering
 
-\inferrule*[right=(Chk)] { \ctx \vdash x \tyinfer \vt }{ \ctx \vdash x \tycheck \vt }
+\inferrule*[right=(Chk)] { \ctx \vdash \tv \tyinfer \vty }{ \ctx \vdash \tv \tycheck \vty }
 \and
 
 \inferrule*[right=(Ann)]
-  {\ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\
-   \ctx \vdash\te\tycheck \vt}
-  { \ctx \vdash (e:\tty) \tyinfer \vt }
+  {\ctx \vdash \tty \tycheck * \\ \tty \evalsto \vty \\
+   \ctx \vdash\te\tycheck \vty}
+  { \ctx \vdash (\te:\tty) \tyinfer \vty }
 \and
 
 
-\inferrule*[right=(Star)]{ }{ \ctx \vdash * \tyinfer * }
+\inferrule*[right=(Star)]{ }{ \ctx \vdash \tstar \tyinfer \vstar }
 \and
 
 
-\inferrule*[right=(Var)] { \ctx(x) = \vt }{ \ctx \vdash \te \tyinfer \vt }
+\inferrule*[right=(Var)] { \ctx(\tv) = \vty }{ \ctx \vdash \tv \tyinfer \vty }
 \and
 
 \inferrule*[right=(Lam)]
-  { \ctx,x : \vt \vdash\te\tycheck \vt' }
-  { \ctx \vdash  \lambda x \rightarrow\te\tycheck \vpi{x }{ \vt) }{} \vt'}
+  { \ctx,\tv : \vty \vdash\te\tycheck \vty[2] }
+  { \ctx \vdash  \vlam{\tv}{\te} \tycheck \vpi{\tv}{\vty}{} \vty[2]}
 \and
 
 \inferrule*[right=(Tuple)]
-  { \ctx \vdash\te\tycheck \vt \\  \ctx \vdash \te[2] \tycheck \vt'}
-  { \ctx \vdash  (e,\te[2]) \tycheck \Sigma (x : \vt) . \vt'}
+  { \ctx \vdash\te\tycheck \vty \\  \ctx \vdash \te[2] \tycheck \vty[2]}
+  { \ctx \vdash  (\te,\te[2]) \tycheck \vsig (\tv : \vty) . \vty[2]}
 \and
 
 \inferrule*[right=(App)]
-  { \ctx \vdash\te\tyinfer  \vpi{x}{\vt}{\vt'}  \\  \ctx \vdash \te[2] \tycheck \vt \\ \vt'[x \mapsto \te[2]] \evalsto \vt[3] }
-  { \ctx \vdash e\ \te[2] \tyinfer \vt[3]}
+  { \ctx \vdash\te\tyinfer  \vpi{x}{\vty}{\vty[2]}  \\  \ctx \vdash \te[2] \tycheck \vty \\ \vty[2][x \mapsto \te[2]] \evalsto \vty[3] }
+  { \ctx \vdash \te\ \te[2] \tyinfer \vty[3]}
 \and
 
 \inferrule*[right=(Fst)]
-  { \ctx \vdash\te\tyinfer \vsig{x}{\vt}{\vt'}}
-  { \ctx \vdash \text{fst}\ \te\tyinfer \vt}
+  { \ctx \vdash\te\tyinfer \vsig{x}{\vty}{\vty[2]}}
+  { \ctx \vdash \tfst{\te} \tyinfer \vty}
 \and
 
 \inferrule*[right=(Snd)]
-  { \ctx \vdash\te\tyinfer \vsig{x}{\vt}{\vt[2]} \\ \vt[2][x \mapsto \text{fst}\ e] \evalsto \vt[3] }
-  { \ctx \vdash \text{snd}\ e\tyinfer \vt[3]}
+  { \ctx \vdash\te\tyinfer \vsig{x}{\vty}{\vty[2]} \\ \vty[2][x \mapsto \text{fst}\ e] \evalsto \vty[3] }
+  { \ctx \vdash \tsnd{\te} \tyinfer \vty[3]}
 \and
 \inferrule*[right=(Pi)]
-   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx,x:\vt \vdash \tty[2] \tycheck * }
-   { \ctx \vdash \vpi{x }{ \tty}{\tty[2]} \tyinfer * }
+   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
+   { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tyinfer \vstar }
 \label{ty:pi}
 \and
 
 \inferrule*[right=(Sigma)]
-   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx,x:\vt \vdash \tty[2] \tycheck * }
-   { \ctx \vdash \vsig{x}{\tty}{\tty[2]} \tyinfer * }
+   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
+   { \ctx \vdash \tsig{\tv}{\tty}{\tty[2]} \tyinfer \vstar }
 \and
 \end{mathpar}
 
@@ -272,12 +277,12 @@ Une reformulation équivalentes des règles $\textsc{(Pi)}$ et $\textsc{(Sigma)}
 
 \begin{mathpar}
 \inferrule*[right=(Pi)]
-   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx \vdash \tty[2] \tycheck \vpi{x}{\vt}{*} }
-   { \ctx \vdash \vpi{x }{ \tty}{\tty[2]} \tyinfer * }
+   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
+   { \ctx \vdash \vpi{\tv }{ \tty}{\tty[2]} \tyinfer \vstar }
 \and
 
 \inferrule*[right=(Sigma)]
-   { \ctx \vdash \tty \tycheck * \\ \tty \evalsto \vt \\ \ctx \vdash \tty[2] \tycheck \vpi{x}{\vt}{*} }
-   { \ctx \vdash \vsig{x }{ \tty}{\tty[2]} \tyinfer * }
+   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
+   { \ctx \vdash \vsig{\tv}{\tty}{\tty[2]} \tyinfer \vstar }
 \and
 \end{mathpar}
