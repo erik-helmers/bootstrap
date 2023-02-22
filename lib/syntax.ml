@@ -6,7 +6,10 @@ let binder name body =
 
 let atom name = Atom.make name
 let var name = Free (atom name)
+
+(* Booleans *)
 let bool v = Bool v
+let cond c t t' = Cond (c, t, t')
 
 (* Pi related terms  *)
 let fn x body = Lam (binder x body)
