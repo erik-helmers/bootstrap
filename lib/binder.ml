@@ -16,3 +16,6 @@ let map f b = { b with scoped = f b.scoped }
 
 (* same as map, but you do not have to remember to increment *)
 let weaken f i b = { b with scoped = f (i + 1) b.scoped }
+
+(* Binder equality *)
+let eq ( = ) b b' = b.scoped = b'.scoped
