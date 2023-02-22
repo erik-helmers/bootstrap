@@ -18,5 +18,10 @@ let cmp a1 a2 =
 let eq a1 a2 = cmp a1 a2 = 0
 let name a = a.name
 
-(* Only used by pprint *)
-let uid a = a.uid
+module Ord = struct
+  type nonrec t = t
+
+  let compare = cmp
+end
+
+module Map = Map.Make (Ord)
