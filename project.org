@@ -97,10 +97,6 @@
   \newcommand{\vtydflt}[1]{\tau_{#1}}
   \newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
 
-  % Neutral
-  \readlist*\vnsyms{n, n', n''}
-  \newcommand{\vndflt}[1]{n_{#1}}
-  \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
 
   % Variables
   \readlist*\vvsyms{x, y, z}
@@ -117,6 +113,20 @@
   \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
   % Type of types
   \newcommand{\vstar}{\star}
+
+  % Neutrals
+
+  % Variable
+  \readlist*\vnsyms{n, n', n''}
+  \newcommand{\vndflt}[1]{n_{#1}}
+  \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+  % App
+  \newcommand{\napp}[2]{#1\ #2}
+  % Fst
+  \newcommand{\nfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\nsnd}[1]{\text{snd}\ #1}
 
   % Symbols
 
@@ -178,6 +188,13 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
     \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
 \end{decl}\]
 
+\[\begin{decl}{\vn}
+    \drule{\vv                         }{variable }
+    \drule{\napp{\vn}{\ve}             }{neutral app}
+    \drule{\nfst{\vn}                  }{neutral first projection}
+    \drule{\nsnd{\vn}                  }{neutral second projection}
+\end{decl}\]
+
 \begin{mathpar}
 
 
@@ -205,7 +222,7 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 \and
 \inferrule*[right=(NApp)]
   {\te \evalsto \vn \\ \te[2] \evalsto \ve[2]}
-  {\te \ \te[2] \evalsto \vn\ \ve[2]}
+  {\te \ \te[2] \evalsto \napp{\vn}{\ve[2]}}
 \and
 
 \inferrule*[right=(Fst)]
@@ -216,6 +233,16 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 \inferrule*[right=(Snd)]
   {\te \evalsto (\ve,\ve[2])}
   { \tsnd{\te} \evalsto \ve[2]}
+\and
+
+\inferrule*[right=(NFst)]
+  {\te  \evalsto \vn}
+  { \tfst{\te} \evalsto \nfst{\vn}}
+\and
+
+\inferrule*[right=(NSnd)]
+  {\te  \evalsto \vn}
+  { \tsnd{\te} \evalsto \nsnd{\vn}}
 \and
 
 \inferrule*[right=(Pi)]
@@ -280,6 +307,8 @@ In the following, \(\te\tyinfer \vty\) is an expression with inferrable type $\v
   { \ctx \vdash\te\tyinfer \vsig{x}{\vty}{\vty[2]} \\ \vty[2][x \mapsto \text{fst}\ e] \evalsto \vty[3] }
   { \ctx \vdash \tsnd{\te} \tyinfer \vty[3]}
 \and
+
+
 \inferrule*[right=(Pi)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
    { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tyinfer \vstar }
