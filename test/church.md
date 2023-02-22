@@ -136,3 +136,83 @@ val exp : term = (fn m -> (fn n -> (fn f -> (fn x -> (((n m) f) x)))))
 # norm_eq (app2 exp (num 2) (num 8)) (num 256);;
 - : bool = true
 ```
+
+
+# Church booleans
+
+Let's now define Church booleans and compare their behavior with our `Bool` and `Cond` terms.
+
+## Definition
+
+```ocaml
+# let ctrue = fn2 "a" "b" (fun a b -> a);;
+val ctrue : term = (fn a -> (fn b -> a))
+# let cfalse = fn2 "a" "b" (fun a b -> b);;
+val cfalse : term = (fn a -> (fn b -> b))
+# let cbool b = norm_eq b ctrue;; (* makes our lives easy *);;
+val cbool : term -> bool = <fun>
+```
+
+```ocaml
+# let _true = bool true;;
+val _true : term = true
+# let _false = bool false;;
+val _false : term = false
+# let _bool b = norm_eq b _true;; 
+val _bool : term -> bool = <fun>
+```
+
+## Operations 
+
+```ocaml
+# let cand = fn2 "p" "q" (fun p q -> app2 p q p);;
+val cand : term = (fn p -> (fn q -> ((p q) p)))
+# let cor  = fn2 "p" "q" (fun p q -> app2 p p q);;
+val cor : term = (fn p -> (fn q -> ((p p) q)))
+# let cnot = fn  "p" (fun p -> app2 p cfalse ctrue);;
+val cnot : term = (fn p -> ((p (fn a -> (fn b -> b))) (fn a -> (fn b -> a))))
+# let cif  = fn3 "p" "a" "b" (fun p a b -> app2 p a b);;
+val cif : term = (fn p -> (fn a -> (fn b -> ((p a) b))))
+```
+
+```ocaml
+
+# let test_binop op = List.map (fun (a,b) -> cbool (app2 op a b))
+      [ cfalse, cfalse; cfalse, ctrue; ctrue, cfalse; ctrue, ctrue];;
+val test_binop : term -> bool list = <fun>
+
+# test_binop cand;;
+- : bool list = [false; false; false; true]
+# test_binop cor;;
+- : bool list = [false; true; true; true]
+```
+
+And here are similar operations on our `Bool` and `Cond` terms.
+```ocaml
+# let bcond = let ty=var "bool" in fun c -> cond c ty;;
+val bcond : term -> term -> term -> term = <fun>
+# let tand = fn2 "p" "q" (fun p q -> 
+    bcond p (bcond q _true _false)
+             _false);;
+val tand : term = (fn p ->
+  (fn q -> (cond p [_ bool] (cond q [_ bool] true false) false)))
+# let tor = fn2 "p" "q" (fun p q -> 
+    bcond p _true
+           (bcond q _true _false));;
+val tor : term = (fn p ->
+  (fn q -> (cond p [_ bool] true (cond q [_ bool] true false))))
+# let tnot = fn "p" (fun p -> bcond p _false _true);;
+val tnot : term = (fn p -> (cond p [_ bool] false true))
+```
+
+
+```ocaml
+# let test_binop op = List.map (fun (a,b) -> _bool (app2 op a b))
+      [ _false, _false; _false, _true; _true, _false; _true, _true];;
+val test_binop : term -> bool list = <fun>
+
+# test_binop tand;;
+- : bool list = [false; false; false; true]
+# test_binop tor;;
+- : bool list = [false; true; true; true]
+```
