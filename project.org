@@ -266,7 +266,7 @@ In the following, \(\te\tyinfer \vty\) is an expression with inferrable type $\v
 \begin{mathpar}
 \centering
 
-\inferrule*[right=(Chk)] { \ctx \vdash \tv \tyinfer \vty }{ \ctx \vdash \tv \tycheck \vty }
+\inferrule*[right=(Chk)] { \ctx \vdash \te \tyinfer \vty }{ \ctx \vdash \te \tycheck \vty }
 \and
 
 \inferrule*[right=(Ann)]
