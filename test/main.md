@@ -68,22 +68,22 @@ val x : atom = x
 # Bool true, Bool false;;
 - : term * term = (true, false)
 # cond (var "x") (var "*") (var "y") (var "z");;
-- : term = cond x [_ *] y z
+- : term = (cond x [_ *] y z)
 # fn "x" (fun x -> x);;
 - : term = (fn x -> x)
 # app (var "f") (var "x");;
-- : term = f
-x
+- : term = (f
+x)
 # pi "x" (var "*") (fun x -> x);;
 - : term = Π(x : *).x
 # tuple (var "x", var "y");;
 - : term = (x, y)
 # first (var "t");;
-- : term = fst
-t
+- : term = (fst
+t)
 # second (var "t");;
-- : term = snd
-t
+- : term = (snd
+t)
 # sigma  "x" (var "*") (fun x -> x);;
 - : term = Σ(x : *).x
 ```
@@ -175,8 +175,8 @@ val cons : value = VLam <fun>
 # quote cons;;
 - : term = (fn q0 -> (fn q1 -> q0))
 # quote (VNeu (NApp(n,id)));;
-- : term = n
-(fn q0 -> q0)
+- : term = (n
+(fn q0 -> q0))
 ```
 
 ## Sigma 
@@ -188,11 +188,11 @@ val n : neutral = NVar n
 # quote t ;;
 - : term = ((fn q0 -> q0), (fn q0 -> (fn q1 -> q0)))
 # quote (VNeu (NFst n));;
-- : term = fst
-n
+- : term = (fst
+n)
 # quote (VNeu (NSnd n));;
-- : term = snd
-n
+- : term = (snd
+n)
 ```
 
 
@@ -209,7 +209,7 @@ val pair : term = (fn x -> (x, x))
 # norm pair;;
 - : term = (fn q0 -> (q0, q0))
 # let weird_id = fn "x" (fun x -> first (app pair x));;
-val weird_id : term = (fn x -> fst (fn x -> (x, x)) x)
+val weird_id : term = (fn x -> (fst ((fn x -> (x, x)) x)))
 # norm weird_id;;
 - : term = (fn q0 -> q0)
 # eq id weird_id;;
