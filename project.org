@@ -290,7 +290,7 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 
 \inferrule*[right=(Tuple)]
   { \ctx \vdash\te\tycheck \vty \\  \ctx \vdash \te[2] \tycheck \vty[2]}
-  { \ctx \vdash  (\te,\te[2]) \tycheck \vsig (\tv : \vty) . \vty[2]}
+  { \ctx \vdash  (\te,\te[2]) \tycheck \vsig {\tv}{\vty}{\vty[2]}}
 \and
 
 \inferrule*[right=(App)]
@@ -312,7 +312,6 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 \inferrule*[right=(Pi)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
    { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tysynth \vstar }
-\label{ty:pi}
 \and
 
 \inferrule*[right=(Sigma)]
