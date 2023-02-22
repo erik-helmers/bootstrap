@@ -12,14 +12,7 @@ let close_ unbind atom expr =
   { name = Atom.name atom; scoped = unbind atom expr }
 
 let subst bind t v = bind v t.scoped
-
-(** Here be dragons *)
-
-let unwrap b = b.scoped
-
-(*  very unsafe  *)
 let map f b = { b with scoped = f b.scoped }
 
-(* is the name right ? *)
 (* same as map, but you do not have to remember to increment *)
 let weaken f i b = { b with scoped = f (i + 1) b.scoped }
