@@ -14,6 +14,21 @@ type term =
   | Snd of term
   | Sigma of term * term binder
 
+type value =
+  | VNeu of neutral
+  | VBool of bool
+  | VLam of (value -> value)
+  | VPi of value * (value -> value)
+  | VTuple of value * value
+  | VSigma of value * (value -> value)
+
+and neutral =
+  | NVar of atom
+  | NCond of neutral * (value -> value) * value * value
+  | NApp of neutral * value
+  | NFst of neutral
+  | NSnd of neutral
+
 let traverse map_free map_bound term =
   let rec aux i (term : term) =
     match term with
