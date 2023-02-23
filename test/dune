@@ -1,3 +1,2 @@
-(tests
- (names types)
- (libraries scratch alcotest))
+(mdx
+ (libraries scratch))
