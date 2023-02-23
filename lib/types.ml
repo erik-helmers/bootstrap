@@ -5,7 +5,7 @@ type term =
   | Free of atom
   | Bound of int
   | Bool of bool
-  | Cond of term * term * term
+  | Cond of term * term binder * term * term
   | Lam of term binder
   | App of term * term
   | Pi of term * term binder
@@ -20,7 +20,8 @@ let traverse map_free map_bound term =
     | Free a -> ( match map_free i a with Some t -> t | _ -> term)
     | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
     | Bool _ -> term
-    | Cond (c, t, t') -> Cond (aux i c, aux i t, aux i t')
+    | Cond (c, t, b, b') ->
+        Cond (aux i c, Binder.weaken aux i t, aux i b, aux i b')
     | Lam b -> Lam (Binder.weaken aux i b)
     | App (t, t') -> App (aux i t, aux i t')
     | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)

@@ -12,8 +12,8 @@ let of_pp pp t =
 
 let atom = of_pp Atom.pp
 
-let cond cnd t t' =
-  flow (break 1) [ string "if"; cnd; string "then"; t; string "else"; t' ]
+let cond cnd x t b b' =
+  flow (break 1) [ string "cond"; cnd; brackets (x ^/^ t); b; b' ]
 
 let lam arg body =
   parens @@ flow (break 1) [ string "fn"; arg; string "->"; body ]
@@ -35,7 +35,9 @@ let rec term e =
   | Bound i -> brackets @@ OCaml.int i
   | Bool true -> string "true"
   | Bool false -> string "false"
-  | Cond (cnd, t, t') -> cond (term cnd) (term t) (term t')
+  | Cond (cnd, t, b, b') ->
+      let arg, body = open_ t in
+      cond (term cnd) (atom arg) (term body) (term b) (term b')
   | Lam f ->
       let arg, body = open_ f in
       lam (atom arg) (term body)

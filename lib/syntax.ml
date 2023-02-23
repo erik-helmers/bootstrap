@@ -9,7 +9,10 @@ let var name = Free (atom name)
 
 (* Booleans *)
 let bool v = Bool v
-let cond c t t' = Cond (c, t, t')
+let condition c x t b b' = Cond (c, binder x t, b, b')
+
+(* shorthand for uniform type in branches *)
+let cond c t b b' = Cond (c, binder "_" (fun _ -> t), b, b')
 
 (* Pi related terms  *)
 let fn x body = Lam (binder x body)

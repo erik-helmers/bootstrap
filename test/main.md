@@ -67,7 +67,8 @@ val x : atom = x
 - : term = x
 # Bool true, Bool false;;
 - : term * term = (true, false)
-# cond (var "x") (var "y") (var "z");;
+# cond (var "x") (var "*") (var "y") (var "z");;
+- : term = cond x [_ *] y z
 # fn "x" (fun x -> x);;
 - : term = (fn x -> x)
 # app (var "f") (var "x");;
