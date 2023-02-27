@@ -56,7 +56,7 @@ val add : term = (fn m -> (fn n -> (fn f -> (fn x -> ((m f) ((n f) x))))))
 # norm @@ app2 add (num 2) (num 1);;
 - : term = (fn q0 -> (fn q1 -> (q0 (q0 (q0 q1)))))
 
-# let correct a b = norm_eq (app2 add (num a) (num b)) (num (a+b));;
+# let correct a b = norm_equal (app2 add (num a) (num b)) (num (a+b));;
 val correct : int -> int -> bool = <fun>
 # correct 0 0;;
 - : bool = true
@@ -100,7 +100,7 @@ val mul : term = (fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
 (fn f -> (fn x -> (f (f x)))))
 (fn f -> (fn x -> (f x))))
 
-# let correct a b = norm_eq (app2 mul (num a) (num b)) (num (a*b));;
+# let correct a b = norm_equal (app2 mul (num a) (num b)) (num (a*b));;
 val correct : int -> int -> bool = <fun>
 # correct 0 0;;
 - : bool = true
@@ -131,9 +131,9 @@ val exp : term = (fn m -> (fn n -> (fn f -> (fn x -> (((n m) f) x)))))
 (fn f -> (fn x -> x)))
 # norm @@ app2 exp (num 1) (num 0);;
 - : term = (fn q0 -> (fn q1 -> (q0 q1)))
-# norm_eq (app2 exp (num 2) (num 3)) (num 8);;
+# norm_equal (app2 exp (num 2) (num 3)) (num 8);;
 - : bool = true
-# norm_eq (app2 exp (num 2) (num 8)) (num 256);;
+# norm_equal (app2 exp (num 2) (num 8)) (num 256);;
 - : bool = true
 ```
 
@@ -149,7 +149,7 @@ Let's now define Church booleans and compare their behavior with our `Bool` and 
 val ctrue : term = (fn a -> (fn b -> a))
 # let cfalse = fn2 "a" "b" (fun a b -> b);;
 val cfalse : term = (fn a -> (fn b -> b))
-# let cbool b = norm_eq b ctrue;; (* makes our lives easy *);;
+# let cbool b = norm_equal b ctrue;; (* makes our lives easy *);;
 val cbool : term -> bool = <fun>
 ```
 
@@ -158,7 +158,7 @@ val cbool : term -> bool = <fun>
 val _true : term = true
 # let _false = bool false;;
 val _false : term = false
-# let _bool b = norm_eq b _true;; 
+# let _bool b = norm_equal b _true;; 
 val _bool : term -> bool = <fun>
 ```
 

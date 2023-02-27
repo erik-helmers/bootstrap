@@ -1,6 +1,9 @@
 type atom = Atom.t
 type 'a binder = 'a Binder.t
 
+let equal_atom = Atom.equal
+let equal_binder = Binder.equal
+
 type term =
   | Free of atom
   | Bound of int
@@ -13,6 +16,7 @@ type term =
   | Fst of term
   | Snd of term
   | Sigma of term * term binder
+[@@deriving eq]
 
 type value =
   | VNeu of neutral
@@ -54,25 +58,9 @@ let scoped_bind v s =
 (* Substitues Free a for Bound 0 in s  *)
 let scoped_unbind a t =
   traverse
-    (fun i b -> if Atom.eq a b then Some (Bound i) else None)
+    (fun i b -> if Atom.equal a b then Some (Bound i) else None)
     (fun _ _ -> None)
     t
 
 let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
 let close_ = Binder.close_ scoped_unbind
-
-(* Term equality *)
-let rec eq t t' =
-  let binder_eq = Binder.eq eq in
-  match (t, t') with
-  | Free a, Free b -> Atom.eq a b
-  | Bound i, Bound j -> i = j
-  | Bool a, Bool b -> a = b
-  | Lam f, Lam g -> binder_eq f g
-  | App (f, x), App (g, y) -> eq f g && eq x y
-  | Pi (a, f), Pi (b, g) -> eq a b && binder_eq f g
-  | Tuple (a, b), Tuple (c, d) -> eq a c && eq b d
-  | Fst a, Fst b -> eq a b
-  | Snd a, Snd b -> eq a b
-  | Sigma (a, f), Sigma (b, g) -> eq a b && binder_eq f g
-  | _, _ -> false

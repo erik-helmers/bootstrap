@@ -212,9 +212,9 @@ val pair : term = (fn x -> (x, x))
 val weird_id : term = (fn x -> (fst ((fn x -> (x, x)) x)))
 # norm weird_id;;
 - : term = (fn q0 -> q0)
-# eq id weird_id;;
+# equal_term id weird_id;;
 - : bool = false
-# norm_eq id weird_id;;
+# norm_equal id weird_id;;
 - : bool = true
 ```
 
