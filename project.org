@@ -70,7 +70,7 @@
 
 
   % Lambda
-  \newcommand{\tlam}[2]{\lambda #1 \rightarrow #2}
+  \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
   % Tuple
   \newcommand{\ttup}[2]{(#1,#2)}
   % Fst
@@ -104,7 +104,7 @@
   \newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
 
   % Lambda
-  \newcommand{\vlam}[2]{\lambda #1 \rightarrow #2}
+  \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
   % Tuple
   \newcommand{\vtup}[2]{(#1,#2)}
   % Pi
@@ -131,8 +131,8 @@
   % Symbols
 
   \newcommand{\evalsto}{\Downarrow}
-  \newcommand{\tycheck}{:_{\uparrow}}
-  \newcommand{\tysynth}{:_{\downarrow}}
+  \newcommand{\tycheck}{\Leftarrow}
+  \newcommand{\tysynth}{\Rightarrow}
 
   \newcommand{\ctx}{\Gamma}
   \newcommand{\ctxmap}{\vdash}
