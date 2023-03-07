@@ -34,3 +34,4 @@ and quote_binder env f =
   close_ fresh scoped
 
 let quote = quote []
+let quote_equal v v' = Types.equal_term (quote v) (quote v')
