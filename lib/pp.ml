@@ -29,6 +29,7 @@ let app t t' = parens (t ^/^ t')
 let tuple t t' = OCaml.tuple [ t; t' ]
 let fst t = app (string "fst") t
 let snd t = app (string "snd") t
+let annot x t = parens (x ^/^ colon ^/^ t)
 
 let rec term e =
   match e with
@@ -39,6 +40,7 @@ let rec term e =
   | Cond (cnd, t, b, b') ->
       let arg, body = open_ t in
       cond (term cnd) (atom arg) (term body) (term b) (term b')
+  | BoolTy -> string "bool_ty"
   | Lam f ->
       let arg, body = open_ f in
       lam (atom arg) (term body)
@@ -52,6 +54,8 @@ let rec term e =
   | Sigma (t, t') ->
       let arg, body = open_ t' in
       sigma (atom arg) (term t) (term body)
+  | Annot (x, t) -> annot (term x) (term t)
+  | Star -> star
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

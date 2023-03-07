@@ -40,13 +40,10 @@ Lam
 
 Pi and sigma terms : 
 ```ocaml
-# let star = var "*";;
-val star : term = Free {uid = 10; name = "*"}
 # pi "x" star (fun x -> x);;
-- : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Pi (Star, {name = "x"; scoped = Bound 0})
 # sigma "x" star (fun x -> x);;
-- : term =
-Sigma (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Sigma (Star, {name = "x"; scoped = Bound 0})
 ```
 We can be pretty confident in our constructors now. Let's enable pretty printing.
 
@@ -86,6 +83,12 @@ t)
 t)
 # sigma  "x" (var "*") (fun x -> x);;
 - : term = Σ(x : *).x
+# annot (var "x") (var "t");;
+- : term = (x
+:
+t)
+# star;;
+- : term = *
 ```
 # Types
 ## Bindings

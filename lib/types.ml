@@ -9,6 +9,7 @@ type term =
   | Bound of int
   | Bool of bool
   | Cond of term * term binder * term * term
+  | BoolTy
   | Lam of term binder
   | App of term * term
   | Pi of term * term binder
@@ -16,15 +17,19 @@ type term =
   | Fst of term
   | Snd of term
   | Sigma of term * term binder
+  | Annot of term * term
+  | Star
 [@@deriving eq]
 
 type value =
   | VNeu of neutral
   | VBool of bool
+  | VBoolTy
   | VLam of (value -> value)
   | VPi of value * (value -> value)
   | VTuple of value * value
   | VSigma of value * (value -> value)
+  | VStar
 
 and neutral =
   | NVar of atom
@@ -34,13 +39,14 @@ and neutral =
   | NSnd of neutral
 
 let traverse map_free map_bound term =
-  let rec aux i (term : term) =
+  let rec aux i term =
     match term with
     | Free a -> ( match map_free i a with Some t -> t | _ -> term)
     | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
     | Bool _ -> term
     | Cond (c, t, b, b') ->
         Cond (aux i c, Binder.weaken aux i t, aux i b, aux i b')
+    | BoolTy -> BoolTy
     | Lam b -> Lam (Binder.weaken aux i b)
     | App (t, t') -> App (aux i t, aux i t')
     | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)
@@ -48,6 +54,8 @@ let traverse map_free map_bound term =
     | Fst t -> Fst (aux i t)
     | Snd t -> Snd (aux i t)
     | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
+    | Annot (x, t) -> Annot (aux i x, aux i t)
+    | Star -> Star
   in
   aux 0 term
 
