@@ -276,7 +276,7 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 \and
 
 
-\inferrule*[right=(Star)]{ }{ \ctx \vdash \tstar \tysynth \vstar }
+\inferrule*[right=(Star)]{ }{ \ctx \vdash \tstar \tycheck \vstar }
 \and
 
 
@@ -311,12 +311,12 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 
 \inferrule*[right=(Pi)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
-   { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tysynth \vstar }
+   { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tycheck \vstar }
 \and
 
 \inferrule*[right=(Sigma)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
-   { \ctx \vdash \tsig{\tv}{\tty}{\tty[2]} \tysynth \vstar }
+   { \ctx \vdash \tsig{\tv}{\tty}{\tty[2]} \tycheck \vstar }
 \and
 \end{mathpar}
 
@@ -325,11 +325,11 @@ Une reformulation équivalentes des règles $\textsc{(Pi)}$ et $\textsc{(Sigma)}
 \begin{mathpar}
 \inferrule*[right=(Pi)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
-   { \ctx \vdash \vpi{\tv }{ \tty}{\tty[2]} \tysynth \vstar }
+   { \ctx \vdash \vpi{\tv }{ \tty}{\tty[2]} \tycheck \vstar }
 \and
 
 \inferrule*[right=(Sigma)]
    { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
-   { \ctx \vdash \vsig{\tv}{\tty}{\tty[2]} \tysynth \vstar }
+   { \ctx \vdash \vsig{\tv}{\tty}{\tty[2]} \tycheck \vstar }
 \and
 \end{mathpar}
