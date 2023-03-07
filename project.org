@@ -41,9 +41,9 @@
 
 \newenvironment{decl}[1]{
   \setcounter{declfirstrule}{0}
-  \begin{array}{lcll}
+  \[\begin{array}{lcll}
     #1
-    }{\end{array}}
+    }{\end{array}\]}
 
   % Term symbols
 
@@ -146,29 +146,29 @@
 
 ** Syntaxe
 
-\[\begin{decl}{\te, \tty, \tk}
- drule{\te: \tty                 }{annotated term}
- drule{\tv                       }{variable}
- drule{\tlam{x}{\te}             }{lambda}
- drule{\te\ \te[2]               }{application}
- drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
- drule{(\te, \te[2])             }{tuple}
- drule{\tfst{\te}                }{fst}
- drule{\tsnd{\te}                }{snd}
- drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
- drule{\tstar                    }{type of types}
+\begin{decl}{\te, \tty, \tk}
+ \drule{\te: \tty                 }{annotated term}
+ \drule{\tv                       }{variable}
+ \drule{\tlam{x}{\te}             }{lambda}
+ \drule{\te\ \te[2]               }{application}
+ \drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
+ \drule{(\te, \te[2])             }{tuple}
+ \drule{\tfst{\te}                }{fst}
+ \drule{\tsnd{\te}                }{snd}
+ \drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
+ \drule{\tstar                    }{type of types}
 \end{decl}
- \]
+
 
 where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
 
 
 ** Contexte
 
-\[\begin{decl}{\ctx}
+\begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
     \drule{\ctx, \tv:\vty}{adding a variable}
-\end{decl}\]
+\end{decl}
 
 \begin{mathpar}
 \inferrule*{  }{ \ctxValid{\epsilon} }
@@ -179,21 +179,21 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 
 ** Evaluation
 
-\[\begin{decl}{\ve, \vty}
+\begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
     \drule{\vlam {\vv} {\ve}           }{lambda}
     \drule{\vtup {\ve} {\ve[2]}        }{tuple}
     \drule{\vstar                      }{type of types}
     \drule{\vpi {\tv} {\vty} {\vty[2]} }{dependent function space}
     \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
-\end{decl}\]
+\end{decl}
 
-\[\begin{decl}{\vn}
+\begin{decl}{\vn}
     \drule{\vv                         }{variable }
     \drule{\napp{\vn}{\ve}             }{neutral app}
     \drule{\nfst{\vn}                  }{neutral first projection}
     \drule{\nsnd{\vn}                  }{neutral second projection}
-\end{decl}\]
+\end{decl}
 
 \begin{mathpar}
 
