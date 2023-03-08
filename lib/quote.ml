@@ -20,6 +20,8 @@ let rec quote env = function
   | VStar -> Star
   | VUnit -> Unit
   | VNil -> Nil
+  | VLabelTy -> LabelTy
+  | VLabel s -> Label s
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)

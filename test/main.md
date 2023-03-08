@@ -372,3 +372,12 @@ val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
 # check nil ?$unit;;
 - : unit = ()
 ```
+
+## Labels 
+
+```ocaml
+# check label_ty ?$star;;
+- : unit = ()
+# check (label "toto") ?$label_ty;;
+- : unit = ()
+```

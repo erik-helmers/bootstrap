@@ -4,6 +4,8 @@ type 'a binder = 'a Binder.t
 let equal_atom = Atom.equal
 let equal_binder = Binder.equal
 
+type label = string [@@deriving eq]
+
 type term =
   | Free of atom
   | Bound of int
@@ -21,6 +23,8 @@ type term =
   | Star
   | Unit
   | Nil
+  | LabelTy
+  | Label of label
 [@@deriving eq]
 
 type value =
@@ -34,6 +38,8 @@ type value =
   | VStar
   | VUnit
   | VNil
+  | VLabelTy
+  | VLabel of string
 
 and neutral =
   | NVar of atom
@@ -62,6 +68,8 @@ let traverse map_free map_bound term =
     | Star -> Star
     | Unit -> Unit
     | Nil -> Nil
+    | LabelTy -> LabelTy
+    | Label s -> Label s
   in
   aux 0 term
 

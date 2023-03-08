@@ -48,6 +48,8 @@ let rec interpret env t =
   | Star -> VStar
   | Unit -> VUnit
   | Nil -> VNil
+  | LabelTy -> VLabelTy
+  | Label s -> VLabel s
 
 and interpret_binder env b x =
   let (arg : atom), body = open_ b in

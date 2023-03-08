@@ -69,6 +69,8 @@ and check ctx t ty =
       | _ -> failwith "check: unexpected tuple")
   | Unit -> ensure ty VStar
   | Nil -> ensure ty VUnit
+  | LabelTy -> ensure ty VStar
+  | Label _ -> ensure ty VLabelTy
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

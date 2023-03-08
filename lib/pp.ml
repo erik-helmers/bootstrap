@@ -58,6 +58,8 @@ let rec term e =
   | Star -> star
   | Unit -> string "unit"
   | Nil -> string "nil"
+  | LabelTy -> string "label"
+  | Label s -> squote ^^ string s
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

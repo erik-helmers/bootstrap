@@ -40,3 +40,7 @@ let star = Star
 (* Unit and nil *)
 let unit = Unit
 let nil = Nil
+
+(* Labels *)
+let label_ty = LabelTy
+let label s = Label s
