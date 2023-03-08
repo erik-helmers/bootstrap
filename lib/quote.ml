@@ -22,6 +22,9 @@ let rec quote env = function
   | VNil -> Nil
   | VLabelTy -> LabelTy
   | VLabel s -> Label s
+  | VLabelsTy -> LabelsTy
+  | VNilL -> NilL
+  | VConsL (l, ls) -> ConsL (quote env l, quote env ls)
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)

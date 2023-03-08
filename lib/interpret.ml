@@ -50,6 +50,13 @@ let rec interpret env t =
   | Nil -> VNil
   | LabelTy -> VLabelTy
   | Label s -> VLabel s
+  | LabelsTy -> VLabelsTy
+  | NilL -> VNilL
+  | ConsL (l, ls) -> (
+      match (interpret env l, interpret env ls) with
+      | (VLabel _ as l), (VConsL _ as ls) -> VConsL (l, ls)
+      | (VLabel _ as l), (VNilL as ls) -> VConsL (l, ls)
+      | _ -> failwith "interpret: invalid labels")
 
 and interpret_binder env b x =
   let (arg : atom), body = open_ b in

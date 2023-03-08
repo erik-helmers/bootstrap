@@ -71,6 +71,12 @@ and check ctx t ty =
   | Nil -> ensure ty VUnit
   | LabelTy -> ensure ty VStar
   | Label _ -> ensure ty VLabelTy
+  | LabelsTy -> ensure ty VStar
+  | NilL -> ensure ty VLabelsTy
+  | ConsL (l, ls) ->
+      ensure ty VLabelsTy;
+      check ctx l VLabelTy;
+      check ctx ls VLabelsTy
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

@@ -25,6 +25,9 @@ type term =
   | Nil
   | LabelTy
   | Label of label
+  | LabelsTy
+  | NilL
+  | ConsL of term * term
 [@@deriving eq]
 
 type value =
@@ -40,6 +43,9 @@ type value =
   | VNil
   | VLabelTy
   | VLabel of string
+  | VLabelsTy
+  | VNilL
+  | VConsL of value * value
 
 and neutral =
   | NVar of atom
@@ -70,6 +76,9 @@ let traverse map_free map_bound term =
     | Nil -> Nil
     | LabelTy -> LabelTy
     | Label s -> Label s
+    | LabelsTy -> LabelsTy
+    | NilL -> NilL
+    | ConsL (l, ls) -> ConsL (aux i l, aux i ls)
   in
   aux 0 term
 

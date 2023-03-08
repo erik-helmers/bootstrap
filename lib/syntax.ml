@@ -43,4 +43,8 @@ let nil = Nil
 
 (* Labels *)
 let label_ty = LabelTy
-let label s = Label s
+let label l = Label l
+let labels_ty = LabelsTy
+let consL l ls = ConsL (l, ls)
+let nilL = NilL
+let labels ls = List.fold_left (fun ls l -> consL l ls) NilL ls

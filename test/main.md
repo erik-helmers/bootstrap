@@ -380,4 +380,13 @@ val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
 - : unit = ()
 # check (label "toto") ?$label_ty;;
 - : unit = ()
+# check labels_ty ?$star;;
+- : unit = ()
+# check (labels []) ?$labels_ty;;
+- : unit = ()
+# check (labels [label "toto"; label "tata"]) ?$labels_ty;;
+- : unit = ()
+# check (labels [true_]) ?$labels_ty;;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = label}.
 ```
+
