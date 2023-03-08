@@ -15,8 +15,13 @@ let cmp a1 a2 =
   assert (a1.uid <> a2.uid || a1.name = a2.name);
   Stdlib.compare a1.uid a2.uid
 
-let eq a1 a2 = cmp a1 a2 = 0
+let equal a1 a2 = cmp a1 a2 = 0
 let name a = a.name
 
-(* Only used by pprint *)
-let uid a = a.uid
+module Ord = struct
+  type nonrec t = t
+
+  let compare = cmp
+end
+
+module Map = Map.Make (Ord)

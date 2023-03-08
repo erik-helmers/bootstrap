@@ -1,2 +1,2 @@
 (mdx
- (libraries scratch))
+ (libraries scratch ppx_deriving.runtime))

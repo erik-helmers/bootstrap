@@ -1,6 +1,9 @@
 type atom = Atom.t
 type 'a binder = 'a Binder.t
 
+let equal_atom = Atom.equal
+let equal_binder = Binder.equal
+
 type term =
   | Free of atom
   | Bound of int
@@ -13,6 +16,22 @@ type term =
   | Fst of term
   | Snd of term
   | Sigma of term * term binder
+[@@deriving eq]
+
+type value =
+  | VNeu of neutral
+  | VBool of bool
+  | VLam of (value -> value)
+  | VPi of value * (value -> value)
+  | VTuple of value * value
+  | VSigma of value * (value -> value)
+
+and neutral =
+  | NVar of atom
+  | NCond of neutral * (value -> value) * value * value
+  | NApp of neutral * value
+  | NFst of neutral
+  | NSnd of neutral
 
 let traverse map_free map_bound term =
   let rec aux i (term : term) =
@@ -39,7 +58,7 @@ let scoped_bind v s =
 (* Substitues Free a for Bound 0 in s  *)
 let scoped_unbind a t =
   traverse
-    (fun i b -> if Atom.eq a b then Some (Bound i) else None)
+    (fun i b -> if Atom.equal a b then Some (Bound i) else None)
     (fun _ _ -> None)
     t
 

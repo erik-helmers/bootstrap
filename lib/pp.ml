@@ -13,7 +13,8 @@ let of_pp pp t =
 let atom = of_pp Atom.pp
 
 let cond cnd x t b b' =
-  flow (break 1) [ string "cond"; cnd; brackets (x ^/^ t); b; b' ]
+  parens
+  @@ flow (break 1) [ string "cond"; cnd; brackets (x ^/^ t); b; b' ]
 
 let lam arg body =
   parens @@ flow (break 1) [ string "fn"; arg; string "->"; body ]
@@ -24,7 +25,7 @@ let pi x t t' =
 let sigma x t t' =
   flow (break 0) [ sigma_sym; parens (x ^/^ colon ^/^ t); dot; t' ]
 
-let app t t' = t ^/^ t'
+let app t t' = parens (t ^/^ t')
 let tuple t t' = OCaml.tuple [ t; t' ]
 let fst t = app (string "fst") t
 let snd t = app (string "snd") t
@@ -41,7 +42,7 @@ let rec term e =
   | Lam f ->
       let arg, body = open_ f in
       lam (atom arg) (term body)
-  | App (t, t') -> term t ^/^ term t'
+  | App (t, t') -> app (term t) (term t')
   | Pi (t, t') ->
       let arg, body = open_ t' in
       pi (atom arg) (term t) (term body)
