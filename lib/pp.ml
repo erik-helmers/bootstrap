@@ -56,6 +56,8 @@ let rec term e =
       sigma (atom arg) (term t) (term body)
   | Annot (x, t) -> annot (term x) (term t)
   | Star -> star
+  | Unit -> string "unit"
+  | Nil -> string "nil"
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

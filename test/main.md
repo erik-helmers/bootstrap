@@ -89,6 +89,10 @@ t)
 t)
 # star;;
 - : term = *
+# unit;;
+- : term = unit
+# nil;;
+- : term = nil
 ```
 # Types
 ## Bindings
@@ -360,3 +364,11 @@ val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
 - : value = VBoolTy
 ```
     
+## Unit and nil
+
+```ocaml
+# check unit ?$star;;
+- : unit = ()
+# check nil ?$unit;;
+- : unit = ()
+```

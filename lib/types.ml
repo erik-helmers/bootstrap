@@ -19,6 +19,8 @@ type term =
   | Sigma of term * term binder
   | Annot of term * term
   | Star
+  | Unit
+  | Nil
 [@@deriving eq]
 
 type value =
@@ -30,6 +32,8 @@ type value =
   | VTuple of value * value
   | VSigma of value * (value -> value)
   | VStar
+  | VUnit
+  | VNil
 
 and neutral =
   | NVar of atom
@@ -56,6 +60,8 @@ let traverse map_free map_bound term =
     | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
     | Annot (x, t) -> Annot (aux i x, aux i t)
     | Star -> Star
+    | Unit -> Unit
+    | Nil -> Nil
   in
   aux 0 term
 

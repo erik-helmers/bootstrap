@@ -36,3 +36,7 @@ let sigma x t t' = Sigma (t, binder x t')
 (* Typing *)
 let annot x t = Annot (x, t)
 let star = Star
+
+(* Unit and nil *)
+let unit = Unit
+let nil = Nil

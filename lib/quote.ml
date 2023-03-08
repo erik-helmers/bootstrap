@@ -18,6 +18,8 @@ let rec quote env = function
   | VTuple (v, v') -> Tuple (quote env v, quote env v')
   | VSigma (v, f) -> Sigma (quote env v, quote_binder env f)
   | VStar -> Star
+  | VUnit -> Unit
+  | VNil -> Nil
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)

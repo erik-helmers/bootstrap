@@ -46,6 +46,8 @@ let rec interpret env t =
   | Sigma (t, f) -> VSigma (interpret env t, interpret_binder env f)
   | Annot (x, _) -> interpret env x
   | Star -> VStar
+  | Unit -> VUnit
+  | Nil -> VNil
 
 and interpret_binder env b x =
   let (arg : atom), body = open_ b in
