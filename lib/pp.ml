@@ -73,6 +73,9 @@ and term e =
   | Label s -> squote ^^ string s
   | LabelsTy -> string "labels"
   | (NilL as ls) | (ConsL _ as ls) -> labels ls
+  | Enum ls -> string "Enum" ^^ labels ls
+  | EnumZe -> string "0"
+  | EnumSuc t -> string "1+" ^/^ term t
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

@@ -390,3 +390,25 @@ val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
 Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = label}.
 ```
 
+
+## Enums 
+
+```ocaml
+# let ltrue, lfalse = label "true", label "false";;
+val ltrue : term = 'true
+val lfalse : term = 'false
+# let lbool = labels [ltrue; lfalse];;
+val lbool : term = {'true 'false}
+# let ebool = enum lbool;;
+val ebool : term = Enum{'true 'false}
+# check ebool ?$star;;
+- : unit = ()
+# check (enum_idx 0) ?$ebool;;
+- : unit = ()
+# check (enum_idx 1) ?$ebool;;
+- : unit = ()
+# check (enum_idx 2) ?$ebool;;
+Exception: Failure "check: unexpected index".
+# check (enum_idx 0) ?$(enum @@ labels []);;
+Exception: Failure "check: unexpected index".
+```

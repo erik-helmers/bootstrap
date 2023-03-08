@@ -77,6 +77,17 @@ and check ctx t ty =
       ensure ty VLabelsTy;
       check ctx l VLabelTy;
       check ctx ls VLabelsTy
+  | Enum ls ->
+      ensure ty VStar;
+      check ctx ls VLabelsTy
+  | EnumZe -> (
+      match ty with
+      | VEnum (VConsL _) -> ()
+      | _ -> failwith "check: unexpected index")
+  | EnumSuc i -> (
+      match ty with
+      | VEnum (VConsL (_, ls)) -> check ctx i (VEnum ls)
+      | _ -> failwith "check: unexpected index")
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

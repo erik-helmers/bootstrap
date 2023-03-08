@@ -28,6 +28,9 @@ type term =
   | LabelsTy
   | NilL
   | ConsL of term * term
+  | Enum of term
+  | EnumZe
+  | EnumSuc of term
 [@@deriving eq]
 
 type value =
@@ -46,6 +49,9 @@ type value =
   | VLabelsTy
   | VNilL
   | VConsL of value * value
+  | VEnum of value
+  | VEnumZe
+  | VEnumSuc of value
 
 and neutral =
   | NVar of atom
@@ -79,6 +85,9 @@ let traverse map_free map_bound term =
     | LabelsTy -> LabelsTy
     | NilL -> NilL
     | ConsL (l, ls) -> ConsL (aux i l, aux i ls)
+    | Enum t -> Enum (aux i t)
+    | EnumZe -> EnumZe
+    | EnumSuc t -> EnumSuc (aux i t)
   in
   aux 0 term
 

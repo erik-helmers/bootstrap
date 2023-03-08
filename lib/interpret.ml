@@ -57,6 +57,15 @@ let rec interpret env t =
       | (VLabel _ as l), (VConsL _ as ls) -> VConsL (l, ls)
       | (VLabel _ as l), (VNilL as ls) -> VConsL (l, ls)
       | _ -> failwith "interpret: invalid labels")
+  | Enum ls -> (
+      match interpret env ls with
+      | (VConsL _ | VNilL) as ls -> VEnum ls
+      | _ -> failwith "interpret: invalid labels in enum")
+  | EnumZe -> VEnumZe
+  | EnumSuc l -> (
+      match interpret env l with
+      | (VEnumZe | VEnumSuc _) as l -> VEnumSuc l
+      | _ -> failwith "interpret: invalid enum index")
 
 and interpret_binder env b x =
   let (arg : atom), body = open_ b in

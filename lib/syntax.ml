@@ -48,3 +48,12 @@ let labels_ty = LabelsTy
 let consL l ls = ConsL (l, ls)
 let nilL = NilL
 let labels ls = List.fold_left (fun ls l -> consL l ls) NilL ls
+
+(* Enums *)
+let enum ls = Enum ls
+
+let enum_idx i =
+  let rec aux i acc =
+    match i with 0 -> acc | _ -> aux (i - 1) (EnumSuc acc)
+  in
+  aux i EnumZe
