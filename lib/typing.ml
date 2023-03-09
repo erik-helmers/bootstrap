@@ -1,5 +1,4 @@
 open Types
-open Syntax
 open Quote
 open Interpret
 module Ctx = Map.Make (Atom.Ord)
@@ -14,8 +13,12 @@ let rec synth ctx t =
       try Ctx.find a ctx
       with Not_found -> failwith "synth: unknown free ")
   | Bound _ -> failwith "synth : bound terms are illegal here"
-  | Bool _ -> VBoolTy
-  | Cond (c, t, _, _) -> interpret (App (Lam t, c))
+  | Cond (c, t, b, b') ->
+      check ctx c VBoolTy;
+      check ctx (Lam t) (VPi (VBoolTy, fun _ -> VStar));
+      check ctx b @@ interpret (App (Lam t, Bool true));
+      check ctx b' @@ interpret (App (Lam t, Bool false));
+      interpret (App (Lam t, c))
   | App (f, x) -> (
       match synth ctx f with
       | VPi (t, t') ->
@@ -31,8 +34,10 @@ let rec synth ctx t =
       | VSigma (_, t) -> t (interpret (Snd e))
       | _ -> failwith "synth : term is not a tuple")
   | Annot (x, t) ->
-      check ctx x (interpret t);
-      interpret t
+      check ctx t VStar;
+      let ty = interpret t in
+      check ctx x ty;
+      ty
   | _ -> failwith "synth : term type is not synthetisable"
 
 and check ctx t ty =
@@ -40,16 +45,17 @@ and check ctx t ty =
     if Quote.quote_equal ty exp then () else raise (mismatch ty exp)
   in
   match t with
-  | Star -> ensure ty VStar
-  | BoolTy -> ensure ty VStar
+  | Star -> ensure VStar ty
+  | BoolTy -> ensure VStar ty
+  | Bool _ -> ensure VBoolTy ty
   | Pi (t, t') ->
+      ensure ty VStar;
       check ctx t VStar;
-      check_binder ctx t' (interpret t) (fun _ -> VStar);
-      ensure ty VStar
+      check_binder ctx t' (interpret t) (fun _ -> VStar)
   | Sigma (t, t') ->
+      ensure ty VStar;
       check ctx t VStar;
-      check_binder ctx t' (interpret t) (fun _ -> VStar);
-      ensure ty VStar
+      check_binder ctx t' (interpret t) (fun _ -> VStar)
   | Lam f -> (
       match ty with
       | VPi (t, t') ->

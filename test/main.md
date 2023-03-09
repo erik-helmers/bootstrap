@@ -237,9 +237,9 @@ And here are a few helpers
 ```ocaml
 # open Typing;;
 # let ctx = ref Ctx.empty;;
-val ctx : Ctx.t ref = {contents = <abstr>}
+val ctx : '_weak1 Map.t ref = {contents = <abstr>}
 # let assume a v = ctx := Ctx.add a v !ctx;; 
-val assume : atom -> value -> unit = <fun>
+val assume : atom -> '_weak1 -> unit = <fun>
 # let check t ty = check !ctx t ty;;
 val check : term -> value -> unit = <fun>
 # let synth t = synth !ctx t;;
@@ -252,7 +252,7 @@ val synth : term -> value = <fun>
 # check star ?$star;;
 - : unit = ()
 # check star ?$bool_ty;;
-Exception: Scratch.Typing.Mismatch {expected = *; got = bool_ty}.
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
 ```
 
 ## Pi
@@ -297,6 +297,23 @@ Then we have the `(Pi)` rule.
 - : unit = ()
 ```
 
+
+## Booleans 
+
+Here are the happy case, and the three sad cases (bad condition, type or branch type).
+
+```ocaml
+# let t x = cond x star bool_ty star;;
+val t : term -> term = <fun>
+# check (condition true_ "x" t true_ bool_ty)  ?$(t true_);;
+- : unit = ()
+# check (condition star "x" t true_ bool_ty )  ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+# check (condition true_ "x" (fun _ -> true_) true_ bool_ty )  ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = *; got = bool_ty}.
+# check (condition true_ "x" t star bool_ty) ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+```
 
 ## Sigma 
 
