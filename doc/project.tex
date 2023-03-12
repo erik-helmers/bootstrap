@@ -1,4 +1,4 @@
-% Created 2023-03-14 mar. 15:58
+% Created 2023-03-14 mar. 17:14
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -36,9 +36,9 @@
 
 
 \section{Minimal calculus}
-\label{sec:org8d1a643}
+\label{sec:orgc76f3b5}
 \subsection{Syntax}
-\label{sec:org0a97d17}
+\label{sec:orge9a32b0}
 
 \begin{decl}{\te, \tty, \tk}
  \drule{\te: \tty                 }{annotated term}
@@ -57,7 +57,7 @@
 where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds respectively.
 
 \subsection{Context}
-\label{sec:org2977552}
+\label{sec:org68a0cc9}
 
 \begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
@@ -72,7 +72,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Evaluation}
-\label{sec:orga0e0f42}
+\label{sec:orgaffeca7}
 
 \begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
@@ -156,7 +156,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Typing}
-\label{sec:org309fa84}
+\label{sec:org2c13e51}
 
 In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezises to \(\vty\) while \(\tycheck{e}{\vty}\) is checkable.
 
@@ -225,9 +225,98 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{mathpar}
 
 
+\section{Interlude : booleans}
+\label{sec:org9f52365}
+\subsection{Syntax}
+\label{sec:org0911c3d}
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\ttrue}{}
+ \drule{\tfalse}{}
+ \drule{\tcond{\te}{\tv}{\tty}{\te[2]}{\te[3]}}{condition}
+ \drule{\tboolty}{type of a bool}
+\end{decl}
+
+\subsection{Evaluation}
+\label{sec:orga06d06d}
+
+\begin{decl}{\ve, \vty}
+    \drule{...}{}
+    \drule{\vtrue}{}
+    \drule{\vfalse}{}
+    \drule{\vboolty}{}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{...}{}
+    \drule{\ncond{\ve}{\tv}{\vty}{\ve[2]}{\ve[3]}}{}
+\end{decl}
+
+
 \begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \evalsto {\ttrue}{\vtrue} }
 \and
 
+\inferrule*[right=(False)]
+  { }
+  { \evalsto {\tfalse}{\vfalse} }
+\and
+
+\\\\
+
+\inferrule*[right=(CondT)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[2]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(CondF)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[3]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(NCond)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[1]} \\ \evalsto {\te[3]}{\ve[2]}}
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ncond{\vn}{\tv}{\vty}{\ve[1]}{\ve[2]}} }
+\and
+
+\\\\
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \evalsto{\tboolty}{\vboolty} }
+\and
+
+\end{mathpar}
+
+\subsection{Typing}
+\label{sec:org7890355}
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \tycheck{\ttrue}{\vboolty} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \tycheck{\tfalse}{\vboolty} }
+\and
+
+\inferrule*[right=(Cond)]
+  { \ctx \ctxmap \tycheck{\te}{\vboolty} \\
+    \ctx,\tv:\vboolty \ctxmap \tycheck{B}{\vstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+ }
+  { \ctx \ctxmap \tysynth {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\vty} }
+\and
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \tycheck{\tboolty}{\vstar} }
 \and
 \end{mathpar}
 \end{document}

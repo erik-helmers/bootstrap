@@ -149,6 +149,16 @@
   % Sigma
   \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
 
+  %%% Booleans
+  \newcommand{\ttrue}{\text{true}}
+  \newcommand{\tfalse}{\text{false}}
+  \newcommand{\tcond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
+  \newcommand{\tboolty}{\text{bool}}
+  %% Values
+  \newcommand{\vtrue}{\text{true}}
+  \newcommand{\vfalse}{\text{false}}
+  \newcommand{\ncond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
+  \newcommand{\vboolty}{\text{bool}}
 
 #+end_src
 
@@ -338,9 +348,93 @@ In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthez
 \end{mathpar}
 
 
+* Interlude : booleans
+** Syntax
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\ttrue}{}
+ \drule{\tfalse}{}
+ \drule{\tcond{\te}{\tv}{\tty}{\te[2]}{\te[3]}}{condition}
+ \drule{\tboolty}{type of a bool}
+\end{decl}
+
+** Evaluation
+
+\begin{decl}{\ve, \vty}
+    \drule{...}{}
+    \drule{\vtrue}{}
+    \drule{\vfalse}{}
+    \drule{\vboolty}{}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{...}{}
+    \drule{\ncond{\ve}{\tv}{\vty}{\ve[2]}{\ve[3]}}{}
+\end{decl}
+
+
 \begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \evalsto {\ttrue}{\vtrue} }
 \and
 
+\inferrule*[right=(False)]
+  { }
+  { \evalsto {\tfalse}{\vfalse} }
 \and
+
+\\\\
+
+\inferrule*[right=(CondT)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[2]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(CondF)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[3]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(NCond)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[1]} \\ \evalsto {\te[3]}{\ve[2]}}
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ncond{\vn}{\tv}{\vty}{\ve[1]}{\ve[2]}} }
+\and
+
+\\\\
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \evalsto{\tboolty}{\vboolty} }
+\and
+
 \end{mathpar}
 
+** Typing
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \tycheck{\ttrue}{\vboolty} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \tycheck{\tfalse}{\vboolty} }
+\and
+
+\inferrule*[right=(Cond)]
+  { \ctx \ctxmap \tycheck{\te}{\vboolty} \\
+    \ctx,\tv:\vboolty \ctxmap \tycheck{B}{\vstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+ }
+  { \ctx \ctxmap \tysynth {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\vty} }
+\and
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \tycheck{\tboolty}{\vstar} }
+\and
+\end{mathpar}
