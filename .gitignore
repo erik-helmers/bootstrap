@@ -4,6 +4,5 @@
 tmp/
 
 _build
-*.tex
 bssetup.sty
 notes.org
