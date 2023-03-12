@@ -162,7 +162,6 @@
 
 where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
 
-
 ** Contexte
 
 \begin{decl}{\ctx}
@@ -257,7 +256,6 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 
 
 \end{mathpar}
-
 
 ** Typing
 
