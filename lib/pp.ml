@@ -42,6 +42,10 @@ let list_of_labels ls =
 
 let rec labels ls = braces (flow_map (break 1) term (list_of_labels ls))
 
+and binder b =
+  let arg, body = open_ b in
+  (atom arg, term body)
+
 and term e =
   match e with
   | Free a -> atom a
@@ -76,6 +80,14 @@ and term e =
   | Enum ls -> string "Enum" ^^ labels ls
   | EnumZe -> string "0"
   | EnumSuc t -> string "1+" ^/^ term t
+  | Record (l, b) ->
+      let arg, body = binder b in
+      string "record" ^/^ term l ^/^ string "as" ^/^ arg
+      ^/^ string "return" ^/^ body
+  | Case (e, b, cs) ->
+      let arg, body = binder b in
+      string "record" ^/^ term e ^/^ string "as" ^/^ arg
+      ^/^ string "return" ^/^ body ^/^ string "with" ^/^ term cs
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

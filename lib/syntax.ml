@@ -57,3 +57,7 @@ let enum_idx i =
     match i with 0 -> acc | _ -> aux (i - 1) (EnumSuc acc)
   in
   aux i EnumZe
+
+(* Record and case *)
+let record e x p = Record (e, binder x p)
+let case e x p cs = Case (e, binder x p, cs)

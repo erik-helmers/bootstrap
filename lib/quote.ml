@@ -37,6 +37,9 @@ and quote_neutral env = function
   | NApp (n, v) -> App (quote_neutral env n, quote env v)
   | NFst n -> Fst (quote_neutral env n)
   | NSnd n -> Snd (quote_neutral env n)
+  | NRecord (l, t) -> Record (quote_neutral env l, quote_binder env t)
+  | NCase (e, t, cs) ->
+      Case (quote_neutral env e, quote_binder env t, quote env cs)
 
 and quote_binder env f =
   let fresh = Atom.make (Printf.sprintf "q%d" (List.length env)) in

@@ -31,6 +31,8 @@ type term =
   | Enum of term
   | EnumZe
   | EnumSuc of term
+  | Record of term * term binder
+  | Case of term * term binder * term
 [@@deriving eq]
 
 type value =
@@ -59,6 +61,8 @@ and neutral =
   | NApp of neutral * value
   | NFst of neutral
   | NSnd of neutral
+  | NRecord of neutral * (value -> value)
+  | NCase of neutral * (value -> value) * value
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -88,6 +92,8 @@ let traverse map_free map_bound term =
     | Enum t -> Enum (aux i t)
     | EnumZe -> EnumZe
     | EnumSuc t -> EnumSuc (aux i t)
+    | Record (t, t') -> Record (aux i t, Binder.weaken aux i t')
+    | Case (e, t, cs) -> Case (aux i e, Binder.weaken aux i t, aux i cs)
   in
   aux 0 term
 

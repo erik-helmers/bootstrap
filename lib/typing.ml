@@ -38,6 +38,17 @@ let rec synth ctx t =
       let ty = interpret t in
       check ctx x ty;
       ty
+  | Record (l, t) ->
+      check ctx l VLabelsTy;
+      check_binder ctx t (VEnum (interpret l)) (fun _ -> VStar);
+      VStar
+  | Case (e, t, cs) -> (
+      match synth ctx e with
+      | VEnum l ->
+          check_binder ctx t (VEnum l) (fun _ -> VStar);
+          check ctx cs (interpret (Record (quote l, t)));
+          interpret (App (Lam t, e))
+      | _ -> failwith "synth: term is not an enum")
   | _ -> failwith "synth : term type is not synthetisable"
 
 and check ctx t ty =
