@@ -47,6 +47,7 @@
 
   % Term symbols
 
+  \newcommand{\tid}[1]{\text{#1}}
 
   % Expression term identifiers
   \readlist*\tesyms{e,e',e''}
@@ -68,21 +69,9 @@
   \newcommand{\tvdflt}[1]{x_{#1}}
   \newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
 
-
-  % Lambda
-  \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
-  % Tuple
-  \newcommand{\ttup}[2]{(#1,#2)}
-  % Fst
-  \newcommand{\tfst}[1]{\text{fst}\ #1}
-  % Snd
-  \newcommand{\tsnd}[1]{\text{snd}\ #1}
-  % Pi
-  \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
-  % Sigma
-  \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
   % Type of types
   \newcommand{\tstar}{\star}
+  \newcommand{\tsubst}[3]{#1[#2 \mapsto #3]}
 
 
   % Value symbols
@@ -103,14 +92,6 @@
   \newcommand{\vvdflt}[1]{x_{#1}}
   \newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
 
-  % Lambda
-  \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
-  % Tuple
-  \newcommand{\vtup}[2]{(#1,#2)}
-  % Pi
-  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
-  % Sigma
-  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
   % Type of types
   \newcommand{\vstar}{\star}
 
@@ -121,12 +102,6 @@
   \newcommand{\vndflt}[1]{n_{#1}}
   \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
 
-  % App
-  \newcommand{\napp}[2]{#1\ #2}
-  % Fst
-  \newcommand{\nfst}[1]{\text{fst}\ #1}
-  % Snd
-  \newcommand{\nsnd}[1]{\text{snd}\ #1}
 
   % Symbols
 
@@ -140,19 +115,54 @@
   \newcommand{\ctxValid}[1]{\text{valid}(#1)}
 
 
+
+  %%% Pi constructors, eliminators and types
+  % Lambda
+  \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
+  % App
+  \newcommand{\tapp}[2]{#1\ #2}
+  % Pi
+  \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
+  %% Values
+  % Lambda
+  \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
+  % App (neutral)
+  \newcommand{\napp}[2]{#1\ #2}
+  % Pi
+  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+
+  %%% Sigma
+  % Tuple
+  \newcommand{\ttup}[2]{(#1,#2)}
+  % Fst
+  \newcommand{\tfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\tsnd}[1]{\text{snd}\ #1}
+  % Sigma
+  \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
+  %% Values
+  % Tuple
+  \newcommand{\vtup}[2]{(#1,#2)}
+  % Fst
+  \newcommand{\nfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\nsnd}[1]{\text{snd}\ #1}
+  % Sigma
+  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+
 #+end_src
 
-* Théorie
 
-** Syntaxe
+* Minimal calculus
+** Syntax
 
 \begin{decl}{\te, \tty, \tk}
  \drule{\te: \tty                 }{annotated term}
  \drule{\tv                       }{variable}
  \drule{\tlam{x}{\te}             }{lambda}
- \drule{\te\ \te[2]               }{application}
+ \drule{\tapp{\te}{\te[2]}        }{application}
  \drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
- \drule{(\te, \te[2])             }{tuple}
+ \drule{\ttup{\te}{\te[2]}        }{tuple}
  \drule{\tfst{\te}                }{fst}
  \drule{\tsnd{\te}                }{snd}
  \drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
@@ -162,7 +172,7 @@
 
 where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
 
-** Contexte
+** Context
 
 \begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
@@ -181,10 +191,10 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 \begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
     \drule{\vlam {\vv} {\ve}           }{lambda}
-    \drule{\vtup {\ve} {\ve[2]}        }{tuple}
-    \drule{\vstar                      }{type of types}
     \drule{\vpi {\tv} {\vty} {\vty[2]} }{dependent function space}
+    \drule{\vtup {\ve} {\ve[2]}        }{tuple}
     \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
+    \drule{\vstar                      }{type of types}
 \end{decl}
 
 \begin{decl}{\vn}
@@ -318,16 +328,9 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 \and
 \end{mathpar}
 
-Une reformulation équivalentes des règles $\textsc{(Pi)}$ et $\textsc{(Sigma)}$, plus adaptée pour l'implémentation :
 
 \begin{mathpar}
-\inferrule*[right=(Pi)]
-   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
-   { \ctx \vdash \vpi{\tv }{ \tty}{\tty[2]} \tycheck \vstar }
 \and
 
-\inferrule*[right=(Sigma)]
-   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx \vdash \tty[2] \tycheck \vpi{\tv}{\vty}{\vstar} }
-   { \ctx \vdash \vsig{\tv}{\tty}{\tty[2]} \tycheck \vstar }
 \and
 \end{mathpar}
