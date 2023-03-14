@@ -104,10 +104,9 @@
 
 
   % Symbols
-
-  \newcommand{\evalsto}{\Downarrow}
-  \newcommand{\tycheck}{\Leftarrow}
-  \newcommand{\tysynth}{\Rightarrow}
+  \newcommand{\evalsto}[2]{#1 \Downarrow #2}
+  \newcommand{\tycheck}[2]{#1 \Leftarrow #2}
+  \newcommand{\tysynth}[2]{#1 \Rightarrow #2}
 
   \newcommand{\ctx}{\Gamma}
   \newcommand{\ctxmap}{\vdash}
@@ -150,6 +149,7 @@
   % Sigma
   \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
 
+
 #+end_src
 
 
@@ -182,7 +182,7 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 \begin{mathpar}
 \inferrule*{  }{ \ctxValid{\epsilon} }
 \inferrule*
-    { \ctxValid{\ctx} \\ \ctx \ctxmap \vty \tycheck \vstar }
+    { \ctxValid{\ctx} \\ \ctx \ctxmap \tycheck{\vty}{\vstar} }
     { \ctxValid{\ctx, \tv : \vty} }
 \end{mathpar}
 
@@ -207,61 +207,63 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 \begin{mathpar}
 
 
-\inferrule*[right=(Star)] {\\} { \tstar \evalsto \vstar} \and
+\inferrule*[right=(Star)] {\\} { \evalsto {\tstar}{\vstar} } \and
 
-\inferrule*[right=(Var)]{\\}{ \tv \evalsto \vv} \and
+\inferrule*[right=(Var)]{\\}{ \evalsto {\tv}{\vv} } \and
 
 \inferrule*[right=(Ann)]
-  {\te \evalsto \ve}
-  {\te: \tty \evalsto \ve}
+  { \evalsto {\te}{\ve} }
+  { \evalsto {\te:\tty}{\ve} }
 \and
 
 \inferrule*[right=(Lam)]
-    {\te\evalsto \ve }
-    { \tlam{\tv}{\te} \evalsto \vlam{x}{\ve}}
+    { \evalsto {\te}{\ve} }
+    { \evalsto {\tlam{\tv}{\te}}{\vlam{x}{\ve}} }
 \and
 \inferrule*[right=(Tuple)]
-    {\te\evalsto \ve \\ \te[2] \evalsto \ve[2] }
-    { (\te, \te[2]) \evalsto (\ve, \ve[2])}
+    { \evalsto {\te}{\ve} \\
+      \evalsto {\te[2]}{\ve[2]} }
+    { \ttup{\te}{\te[2]} \evalsto \ttup{\ve}{\ve[2]} }
 \and
 
 \inferrule*[right=(App)]
-  {\te \evalsto \vlam{\vv}{\ve} \\ \ve[1][ x \mapsto \te[2]] \evalsto \ve[2]}
-  { \te\ \te[2] \evalsto \ve[2]}
+  { \evalsto {\te}{\vlam{\vv}{\ve}} \\
+    \evalsto {\tsubst{\ve[1]}{\tv}{\te[2]}}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\ve[2]} }
 \and
 \inferrule*[right=(NApp)]
-  {\te \evalsto \vn \\ \te[2] \evalsto \ve[2]}
-  {\te \ \te[2] \evalsto \napp{\vn}{\ve[2]}}
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\napp{\vn}{\ve[2]}} }
 \and
 
 \inferrule*[right=(Fst)]
-  {\te  \evalsto (\ve ,\ve[2])}
-  { \tfst{\te} \evalsto \ve}
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tfst{\te}}{\ve} }
 \and
 
 \inferrule*[right=(Snd)]
-  {\te \evalsto (\ve,\ve[2])}
-  { \tsnd{\te} \evalsto \ve[2]}
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tsnd{\te}}{\ve[2]}  }
 \and
 
 \inferrule*[right=(NFst)]
-  {\te  \evalsto \vn}
-  { \tfst{\te} \evalsto \nfst{\vn}}
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tfst{\te}}{\nfst{\vn}} }
 \and
 
 \inferrule*[right=(NSnd)]
-  {\te  \evalsto \vn}
-  { \tsnd{\te} \evalsto \nsnd{\vn}}
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tsnd{\te}}{\nsnd{\vn}} }
 \and
 
 \inferrule*[right=(Pi)]
-  {\tty \evalsto \vty \\ \tty[2] \evalsto \vty[2]}
-  {\tpi{\tv}{\tty}{\tty[2]} \evalsto \vpi{\vv}{\vty}{\vty[2]}}
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tpi{\tv}{\tty}{\tty[2]}}{\vpi{\vv}{\vty}{\vty[2]}} }
 \and
 
 \inferrule*[right=(Sigma)]
-  {\tty \evalsto \vty \\ \tty[2] \evalsto \vty[2]}
-  {\tsig{\tv}{\tty}{\tty[2]} \evalsto \vsig{\vv}{\vty}{\vty[2]}}
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tsig{\tv}{\tty}{\tty[2]}}{\vsig{\vv}{\vty}{\vty[2]}} }
 \and
 
 
@@ -269,62 +271,69 @@ where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respec
 
 ** Typing
 
-In the following, \(\te\tysynth \vty\) is an expression whose type synthezises to \(\vty\) while \(e \tycheck \vty\) is checkable.
+In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthezises to \(\vty\) while \( \tycheck{e}{\vty} \) is checkable.
 
 \begin{mathpar}
 \centering
 
-\inferrule*[right=(Chk)] { \ctx \vdash \te \tysynth \vty }{ \ctx \vdash \te \tycheck \vty }
+\inferrule*[right=(Chk)]
+  { \ctx \ctxmap \tysynth {\te}{\vty} }
+  { \ctx \ctxmap \tycheck{\te}{\vty} }
 \and
 
 \inferrule*[right=(Ann)]
-  {\ctx \vdash \tty \tycheck * \\ \tty \evalsto \vty \\
-   \ctx \vdash\te\tycheck \vty}
-  { \ctx \vdash (\te:\tty) \tysynth \vty }
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\
+   \ctx \ctxmap \tycheck{\te}{\vty}}
+  { \ctx \ctxmap \tysynth {(\te:\tty)}{\vty} }
 \and
 
 
-\inferrule*[right=(Star)]{ }{ \ctx \vdash \tstar \tycheck \vstar }
+\inferrule*[right=(Star)]
+  { }
+  { \ctx \ctxmap \tycheck{\tstar}{\vstar} }
 \and
 
 
-\inferrule*[right=(Var)] { \ctx(\tv) = \vty }{ \ctx \vdash \tv \tysynth \vty }
+\inferrule*[right=(Var)]
+   { \ctx(\tv) = \vty }
+   { \ctx \ctxmap \tysynth {\tv}{\vty} }
 \and
 
 \inferrule*[right=(Lam)]
-  { \ctx,\tv : \vty \vdash\te\tycheck \vty[2] }
-  { \ctx \vdash  \vlam{\tv}{\te} \tycheck \vpi{\tv}{\vty}{} \vty[2]}
+  { \ctx,\tv : \vty \ctxmap \tycheck{\te}{\vty[2]} }
+  { \ctx \ctxmap \tycheck{\vlam{\tv}{\te}}{\vpi{\tv}{\vty}{\vty[2]}} }
 \and
 
 \inferrule*[right=(Tuple)]
-  { \ctx \vdash\te\tycheck \vty \\  \ctx \vdash \te[2] \tycheck \vty[2]}
-  { \ctx \vdash  (\te,\te[2]) \tycheck \vsig {\tv}{\vty}{\vty[2]}}
+  { \ctx \ctxmap \tycheck{\te}{\vty} \\  \ctx \ctxmap \tycheck{\te[2]}{\vty[2]}}
+  { \ctx \ctxmap \tycheck {\vtup{\te}{\te[2]}}{\vsig{\tv}{\vty}{\vty[2]}}}
 \and
 
 \inferrule*[right=(App)]
-  { \ctx \vdash\te\tysynth  \vpi{x}{\vty}{\vty[2]}  \\  \ctx \vdash \te[2] \tycheck \vty \\ \vty[2][x \mapsto \te[2]] \evalsto \vty[3] }
-  { \ctx \vdash \te\ \te[2] \tysynth \vty[3]}
+  { \ctx \ctxmap \tysynth {\te}{\vpi{x}{\vty}{\vty[2]}}  \\  \ctx \ctxmap \tycheck {\te[2]}{\vty} \\ \evalsto {\tsubst{\vty[2]}{\tv}{\te[2]}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tapp{\te}{\te[2]}}{\vty[3]} }
 \and
 
 \inferrule*[right=(Fst)]
-  { \ctx \vdash\te\tysynth \vsig{x}{\vty}{\vty[2]}}
-  { \ctx \vdash \tfst{\te} \tysynth \vty}
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} }
+  { \ctx \ctxmap \tysynth {\tfst{\te}}{\vty} }
 \and
 
 \inferrule*[right=(Snd)]
-  { \ctx \vdash\te\tysynth \vsig{x}{\vty}{\vty[2]} \\ \vty[2][x \mapsto \text{fst}\ e] \evalsto \vty[3] }
-  { \ctx \vdash \tsnd{\te} \tysynth \vty[3]}
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} \\
+    \evalsto {\tsubst{\vty[2]}{\tv}{\tfst{e}}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tsnd{\te}}{\vty[3]} }
 \and
 
 
 \inferrule*[right=(Pi)]
-   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
-   { \ctx \vdash \tpi{\tv}{\tty}{\tty[2]} \tycheck \vstar }
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tpi{\tv}{\tty}{\tty[2]}}{\vstar} }
 \and
 
 \inferrule*[right=(Sigma)]
-   { \ctx \vdash \tty \tycheck \vstar \\ \tty \evalsto \vty \\ \ctx,\tv:\vty \vdash \tty[2] \tycheck \vstar }
-   { \ctx \vdash \tsig{\tv}{\tty}{\tty[2]} \tycheck \vstar }
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tsig{\tv}{\tty}{\tty[2]}}{\vstar} }
 \and
 \end{mathpar}
 
@@ -334,3 +343,4 @@ In the following, \(\te\tysynth \vty\) is an expression whose type synthezises t
 
 \and
 \end{mathpar}
+
