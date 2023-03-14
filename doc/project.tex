@@ -1,4 +1,4 @@
-% Created 2023-03-14 mar. 17:14
+% Created 2023-03-16 jeu. 13:56
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -26,7 +26,7 @@
  pdftitle={Bootstrap},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 28.2 (Org mode 9.5.5)}, 
+ pdfcreator={Emacs 28.2 (Org mode 9.6)}, 
  pdflang={English}}
 \begin{document}
 
@@ -36,9 +36,9 @@
 
 
 \section{Minimal calculus}
-\label{sec:orgc76f3b5}
+\label{sec:orgda4a01a}
 \subsection{Syntax}
-\label{sec:orge9a32b0}
+\label{sec:org410fade}
 
 \begin{decl}{\te, \tty, \tk}
  \drule{\te: \tty                 }{annotated term}
@@ -57,7 +57,7 @@
 where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds respectively.
 
 \subsection{Context}
-\label{sec:org68a0cc9}
+\label{sec:orgb43fc96}
 
 \begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
@@ -72,7 +72,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Evaluation}
-\label{sec:orgaffeca7}
+\label{sec:org1c3d183}
 
 \begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
@@ -156,7 +156,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Typing}
-\label{sec:org2c13e51}
+\label{sec:org2e3cb60}
 
 In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezises to \(\vty\) while \(\tycheck{e}{\vty}\) is checkable.
 
@@ -226,9 +226,9 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 
 
 \section{Interlude : booleans}
-\label{sec:org9f52365}
+\label{sec:org0c47d6f}
 \subsection{Syntax}
-\label{sec:org0911c3d}
+\label{sec:orge009a67}
 \begin{decl}{\te, \tty, \tk}
  \drule{...}{}
  \drule{\ttrue}{}
@@ -238,7 +238,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{decl}
 
 \subsection{Evaluation}
-\label{sec:orga06d06d}
+\label{sec:org4a10da2}
 
 \begin{decl}{\ve, \vty}
     \drule{...}{}
@@ -292,7 +292,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{mathpar}
 
 \subsection{Typing}
-\label{sec:org7890355}
+\label{sec:org6c1c9c9}
 
 \begin{mathpar}
 
@@ -317,6 +317,146 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \inferrule*[right=(BoolTy)]
   { }
   { \tycheck{\tboolty}{\vstar} }
+\and
+
+\end{mathpar}
+
+\section{Enumerations}
+\label{sec:org360410b}
+\subsection{Syntax}
+\label{sec:org2cc2bdc}
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\tnil}{}
+ \drule{\tunit}{}
+ \drule{\tlabel{\tl}}{label}
+ \drule{\tlabelty}{label type}
+ \drule{\tlsnil}{ }
+ \drule{\tlscons{\tl}{\tls}}{}
+ \drule{\tlabelsty}{labels type}
+\end{decl}
+\subsection{Evaluation}
+\label{sec:org7bb32bf}
+
+\begin{mathpar}
+
+ \inferrule*[right=(RecordNil)]
+  { \evalsto {\tls} {\tlsnil} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\tunit} }
+\and
+
+ \inferrule*[right=(RecordCons)]
+  { \evalsto {\tls} {\tlscons{\tl}{\tls[2]}} \\
+    \evalsto {\tsubst{B}{\tv}{\teze}} {\vty} \\
+    \evalsto {\trecord{\tls[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}} {\vty[2]} }
+  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsig{\_}{\vty}{\vty[2]}} }
+\and
+
+
+ \inferrule*[right=(NRecord)]
+  { \evalsto {\tls} {\vn} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\nrecord{\vn}{\tv}{B}} }
+\and
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\teze} \\
+    \evalsto{\tfst{\tid{cs}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ve} }
+\and
+
+\inferrule*[right=(CaseSuc)]
+  { \evalsto{\te}{\tesuc{\te[2]}} \\
+    \evalsto{\tsnd{\tid{cs}}}{\tid{cs'}} \\
+    \evalsto{\tcase{\te[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}{\tid{cs'}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}
+             {\ve}}
+\and
+
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\vn} \\
+    \evalsto{\tid{cs}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ncase{\vn}{\tv}{B}{\ve}} }
+\and
+
+\end{mathpar}
+\subsection{Typing}
+\label{sec:org07c57b8}
+
+\begin{mathpar}
+
+ \inferrule*[right=(Nil)]
+  { }
+  {  \tycheck{\tnil}{\tunit} }
+\and
+
+\inferrule*[right=(Unit)]
+  { }
+  { \tycheck{\tunit}{\vstar} }
+\and
+
+ \inferrule*[right=(Label)]
+  { }
+  {  \tycheck {\tlabel{\tl}}{\tlabelty} }
+\and
+
+\inferrule*[right=(LabelTy)]
+  { }
+  { \tycheck {\tlabelty}{\vstar} }
+\and
+
+\\\\
+\inferrule*[right=(NilL)]
+  { }
+  { \tycheck {\tlsnil}{\tlabelsty} }
+\and
+\inferrule*[right=(ConsL)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \tycheck {\tlscons{\tl}{\tls}}{\tlabelsty} }
+\and
+
+\inferrule*[right=(LabelsTy)]
+  { }
+  { \tycheck {\tlabelsty}{\vstar} }
+\and
+
+\\\\
+
+
+\inferrule*[right=(Zero)]
+  { \ctx \ctxmap \tycheck{\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck{\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck{\teze}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Suc)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx \ctxmap \tycheck {n}{\tenum{\tls}}  }
+  { \ctx \ctxmap \tycheck {\tesuc{n}}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Enum)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck {\tenum{\tls}}{\vstar} }
+\and
+\\\\
+
+\inferrule*[right=(Record)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+ }
+  { \ctx \ctxmap \tysynth {\trecord{\tls}{\tv}{B}}{\vstar} }
+\and
+
+\inferrule*[right=(Case)]
+  { \ctx \ctxmap \tycheck {\te}{\tenum{\tls}} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+    \ctx \ctxmap \tycheck {\tid{cs}}{\trecord{\tls}{\tv}{B} }
+ }
+  { \ctx \ctxmap \tysynth {\tcase{\te}{\tv}{B}{\tid{cs}}}{\vty} }
 \and
 \end{mathpar}
 \end{document}
