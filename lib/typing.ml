@@ -91,6 +91,13 @@ and check ctx t ty =
       match ty with
       | VEnum (VConsL (_, ls)) -> check ctx i (VEnum ls)
       | _ -> raise (bad_value "check: unexpected index" ty))
+  | DUnit -> ensure VDescTy ty
+  | DVar -> ensure VDescTy ty
+  | DSigma (s, d) | DPi (s, d) ->
+      ensure VDescTy ty;
+      check ctx s VStar;
+      check_binder ctx d (interpret s) (fun _ -> VDescTy)
+  | DescTy -> ensure VStar ty
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

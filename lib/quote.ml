@@ -26,6 +26,11 @@ let rec quote env = function
   | VEnum t -> Enum (quote env t)
   | VEnumZe -> EnumZe
   | VEnumSuc t -> EnumSuc (quote env t)
+  | VDUnit -> DUnit
+  | VDVar -> DVar
+  | VDPi (v, v') -> DPi (quote env v, quote_binder env v')
+  | VDSigma (v, v') -> DSigma (quote env v, quote_binder env v')
+  | VDescTy -> DescTy
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)

@@ -30,6 +30,11 @@ type term =
   | EnumSuc of term
   | Record of term * term binder
   | Case of term * term binder * term
+  | DUnit
+  | DVar
+  | DPi of term * term binder
+  | DSigma of term * term binder
+  | DescTy
 [@@deriving eq]
 
 type value =
@@ -49,6 +54,11 @@ type value =
   | VEnum of value
   | VEnumZe
   | VEnumSuc of value
+  | VDUnit
+  | VDVar
+  | VDPi of value * (value -> value)
+  | VDSigma of value * (value -> value)
+  | VDescTy
 
 and neutral =
   | NVar of atom
@@ -84,6 +94,11 @@ let traverse map_free map_bound term =
     | EnumSuc t -> EnumSuc (aux i t)
     | Record (t, t') -> Record (aux i t, Binder.weaken aux i t')
     | Case (e, t, cs) -> Case (aux i e, Binder.weaken aux i t, aux i cs)
+    | DUnit -> DUnit
+    | DVar -> DVar
+    | DPi (t, t') -> DPi (aux i t, Binder.weaken aux i t')
+    | DSigma (t, t') -> DSigma (aux i t, Binder.weaken aux i t')
+    | DescTy -> DescTy
   in
   aux 0 term
 

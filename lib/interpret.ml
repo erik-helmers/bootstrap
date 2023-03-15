@@ -75,6 +75,11 @@ let rec interpret env t =
         | _ -> raise (bad_value "case: expected an index" e)
       in
       aux (interpret env e) cs
+  | DUnit -> VDUnit
+  | DVar -> VDVar
+  | DPi (t, t') -> VDPi (interpret env t, interpret_binder env t')
+  | DSigma (t, t') -> VDSigma (interpret env t, interpret_binder env t')
+  | DescTy -> VDescTy
 
 and interpret_binder env b x =
   let arg, body = open_ b in
