@@ -9,7 +9,7 @@
 #+latex_header: \usepackage{listofitems}
 #+latex_header: \usepackage{bssetup}
 #+latex_header: \usepackage{xparse}
-
+#+latex_header: \usepackage{stmaryrd}
 
 #+name: bssetup
 #+begin_src latex :tangle bssetup.sty :exports none
@@ -121,14 +121,16 @@
   % App
   \newcommand{\tapp}[2]{#1\ #2}
   % Pi
-  \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
+  \newcommand{\tpi}[3]{(#1:#2)\rightarrow #3}
+  \newcommand{\tpian}[2]{#1 \rightarrow #2}
   %% Values
   % Lambda
   \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
   % App (neutral)
   \newcommand{\napp}[2]{#1\ #2}
   % Pi
-  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+  \newcommand{\vpi}[3]{(#1:#2)\rightarrow #3}
+  \newcommand{\vpian}[2]{#1 \rightarrow #2}
 
   %%% Sigma
   % Tuple
@@ -138,7 +140,8 @@
   % Snd
   \newcommand{\tsnd}[1]{\text{snd}\ #1}
   % Sigma
-  \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
+  \newcommand{\tsig}[3]{(#1:#2) \times #3}
+  \newcommand{\tsigan}[2]{#1 \times #2}
   %% Values
   % Tuple
   \newcommand{\vtup}[2]{(#1,#2)}
@@ -147,7 +150,8 @@
   % Snd
   \newcommand{\nsnd}[1]{\text{snd}\ #1}
   % Sigma
-  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+  \newcommand{\vsig}[3]{(#1:#2) \times #3}
+  \newcommand{\vsigan}[2]{#1 \times #2}
 
   %%% Booleans
   \newcommand{\ttrue}{\text{true}}
@@ -201,6 +205,33 @@
   \newcommand{\nrecord}[3]{\trecord{#1}{#2}{#3}}
   \newcommand{\ncase}[4]{\tcase{#1}{#2}{#3}{#4}}
   \newcommand{\venum}[1]{\tenum{#1}}
+
+
+  %%% Descriptions
+  \readlist*\tdsyms{D, D', D''}
+  \newcommand{\tddflt}[1]{t_{#1}}
+  \newcommand{\td}[1][1]{\varlist{\tdsyms}{\tddflt}{#1}}
+
+  \newcommand{\tdesc}[1]{`#1}
+  \newcommand{\tdvar}{`\text{var}}
+  \newcommand{\tdunit}{`\tunit}
+  \newcommand{\tdpi}[2]{`\Pi\ #1\ #2}
+  \newcommand{\tdsig}[2]{`\Sigma\ #1\ #2}
+  \newcommand{\tdecode}[2]{\llbracket #1 \rrbracket\ #2}
+  \newcommand{\tdmu}[1]{\mu\ #1}
+  \newcommand{\tdctor}[1]{\text{ctor}\ #1}
+  \newcommand{\tdescty}{\text{desc}}
+
+  \newcommand{\vdesc}[1]{`#1}
+  \newcommand{\vdvar}{`\text{var}}
+  \newcommand{\vdunit}{`\tunit}
+  \newcommand{\vdpi}[2]{`\Pi\ #1\ #2}
+  \newcommand{\vdsig}[2]{`\Sigma\ #1\ #2}
+  \newcommand{\vdecode}[2]{\llbracket #1 \rrbracket\ #2}
+  \newcommand{\vdmu}[1]{\mu\ #1}
+  \newcommand{\vdctor}[1]{\text{ctor}\ #1}
+  \newcommand{\vdescty}{\text{desc}}
+
 #+end_src
 
 
@@ -388,7 +419,6 @@ In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthez
 \and
 \end{mathpar}
 
-
 * Interlude : booleans
 ** Syntax
 \begin{decl}{\te, \tty, \tk}
@@ -506,7 +536,7 @@ In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthez
   { \evalsto {\tls} {\tlscons{\tl}{\tls[2]}} \\
     \evalsto {\tsubst{B}{\tv}{\teze}} {\vty} \\
     \evalsto {\trecord{\tls[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}} {\vty[2]} }
-  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsig{\_}{\vty}{\vty[2]}} }
+  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsigan{\vty}{\vty[2]}} }
 \and
 
 
@@ -614,4 +644,113 @@ In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthez
  }
   { \ctx \ctxmap \tysynth {\tcase{\te}{\tv}{B}{\tid{cs}}}{\vty} }
 \and
+\end{mathpar}
+
+* Descriptions
+** Syntax
+
+\begin{decl}{\te, \tty}
+ \drule{...}{ }
+ \drule{\tdunit}{ }
+ \drule{\tdvar}{ identity functor }
+ \drule{\tdsig{\tty}{\te}}{ }
+ \drule{\tdpi{\tty}{\te}}{ }
+ \drule{\tdecode{\te}{\tty}}{ }
+ \drule{\tdescty}{ descriptor type }
+ \drule{\tdmu{\te}}{ }
+ \drule{\tdctor{\te}}{ }
+\end{decl}
+
+
+** Evaluation
+
+\begin{decl}{\ve, \vty}
+ \drule{...}{ }
+ \drule{\vdunit}{ }
+ \drule{\vdvar}{ identity functor }
+ \drule{\vdsig{\vty}{\td}}{ }
+ \drule{\vdpi{\vty}{\td}}{ }
+ \drule{\vdescty}{ descriptor type }
+ \drule{\vdmu{\vn}}{ fixpoint }
+ \drule{\vdctor{\vn}}{ constructor }
+\end{decl}
+
+
+\begin{decl}{\vn}
+ \drule{...}{  }
+ \drule{\vdecode{\vn}{\vty}}{ }
+\end{decl}
+
+
+\begin{mathpar}
+
+ \inferrule*[right=(DecodeNil)]
+  { \evalsto {\td} {\vdunit} }
+  { \evalsto {\tdecode{\td}{\tty}}{\tunit} }
+\and
+
+ \inferrule*[right=(DecodeVar)]
+  { \evalsto {\td} {\vdvar} \\
+    \evalsto {\tty} {\vty} \\
+    }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty} }
+\and
+
+ \inferrule*[right=(DecodeSigma)]
+  { \evalsto {\td}{\vdsig{\vty}{\td[2]}} \\
+    \evalsto {\tsig{\te}{\vty}{\tdecode{\tapp{\td}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+ \inferrule*[right=(DecodePi)]
+  { \evalsto {\td} {\vdpi{\vty}{\td[2]}} \\
+    \evalsto {\tpi{\te}{\vty}{\tdecode{\tapp{\td[2]}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+
+\end{mathpar}
+** Typing
+\begin{mathpar}
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdunit}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdvar}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdescty}{\vstar} }
+
+
+\inferrule*[right=(DSigma)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdsig{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(DPi)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdpi{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(Decode)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} \\
+     \ctx \ctxmap \tycheck{\tty}{\vstar} }
+  { \ctx \ctxmap \tysynth{\tdecode{\td}{\tty}}{\vstar} }
+
+\inferrule*[right=(Mu)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} }
+  { \ctx \ctxmap \tycheck{\tdmu{\td}}{\vstar} }
+
+\\\\
+
+\inferrule*[right=]
+  { \ctx \ctxmap \tycheck{\tty}{\tdecode{\td}{(\tdmu{\td})}} }
+  { \ctx \ctxmap \tycheck{\tdctor{\tty}}{\tdmu{\td}} }
+
 \end{mathpar}
