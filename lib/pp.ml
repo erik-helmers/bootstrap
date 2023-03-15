@@ -96,6 +96,8 @@ and term e =
   | DSigma (t, t') ->
       let arg, body = binder t' in
       sym_as_return (bquote ^^ sigma_sym) (term t) arg body
+  | Decode (t, t') ->
+      flow (break 1) [ dbrackets (term t); parens (term t') ]
   | DescTy -> !^"desc"
 
 let to_pp pp (fmt : Format.formatter) t =

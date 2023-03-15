@@ -79,6 +79,17 @@ let rec interpret env t =
   | DVar -> VDVar
   | DPi (t, t') -> VDPi (interpret env t, interpret_binder env t')
   | DSigma (t, t') -> VDSigma (interpret env t, interpret_binder env t')
+  | Decode (d, t) ->
+      let rec aux d t =
+        match d with
+        | VDUnit -> VUnit
+        | VDVar -> interpret env t
+        | VDSigma (t', d') -> VSigma (t', fun x -> aux (d' x) t)
+        | VDPi (t', d') -> VPi (t', fun x -> aux (d' x) t)
+        | VNeu n -> VNeu (NDecode (n, interpret env t))
+        | _ -> raise (BadValue ("decode: expected a desc", d))
+      in
+      aux (interpret env d) t
   | DescTy -> VDescTy
 
 and interpret_binder env b x =

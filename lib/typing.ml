@@ -43,6 +43,10 @@ let rec synth ctx t =
           check ctx cs (interpret (Record (quote l, t)));
           interpret (App (Lam t, e))
       | _ -> raise (bad_term "synth: term is not an enum" e))
+  | Decode (d, t) ->
+      check ctx d VDescTy;
+      check ctx t VStar;
+      VStar
   | _ -> raise (bad_term "synth : term type is not synthetisable" t)
 
 and check ctx t ty =

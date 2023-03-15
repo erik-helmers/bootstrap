@@ -450,3 +450,24 @@ Scratch.Types.BadTerm ("interpret: value is not a tuple", (snd
      )))).
 ```
 
+
+# Descriptions 
+
+```ocaml
+# ?$(decode dunit int);;
+- : value = VUnit
+# ?$(decode dvar int);;
+- : value = VNeu (NVar int)
+# norm (decode (dpi "_"  bool_ty (fun _ -> dvar)) int);;
+- : term = Π(q0 : (Enum {'false 'true})).int
+# norm (decode (dsigma "_"  bool_ty (fun _ -> dvar)) int);;
+- : term = Σ(q0 : (Enum {'false 'true})).int
+# let d = atom "d";;
+val d : atom = d
+# assume d ?$desc_ty;;
+- : unit = ()
+# decode (avar d) int ;;
+- : term = ⟦d⟧ (int)
+# ?$(decode (avar d) int) ;;
+- : value = VNeu (NDecode (NVar d, VNeu (NVar int)))
+```

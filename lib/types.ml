@@ -34,6 +34,7 @@ type term =
   | DVar
   | DPi of term * term binder
   | DSigma of term * term binder
+  | Decode of term * term
   | DescTy
 [@@deriving eq]
 
@@ -67,6 +68,7 @@ and neutral =
   | NSnd of neutral
   | NRecord of neutral * (value -> value)
   | NCase of neutral * (value -> value) * value
+  | NDecode of neutral * value
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -98,6 +100,7 @@ let traverse map_free map_bound term =
     | DVar -> DVar
     | DPi (t, t') -> DPi (aux i t, Binder.weaken aux i t')
     | DSigma (t, t') -> DSigma (aux i t, Binder.weaken aux i t')
+    | Decode (t, t') -> Decode (aux i t, aux i t')
     | DescTy -> DescTy
   in
   aux 0 term

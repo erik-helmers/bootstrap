@@ -69,4 +69,5 @@ let dunit = DUnit
 let dvar = DVar
 let dpi x t t' = DPi (t, binder x t')
 let dsigma x t t' = DSigma (t, binder x t')
+let decode d t = Decode (d, t)
 let desc_ty = DescTy
