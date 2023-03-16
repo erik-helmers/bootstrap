@@ -9,9 +9,6 @@ type label = string [@@deriving eq]
 type term =
   | Free of atom
   | Bound of int
-  | Bool of bool
-  | Cond of term * term binder * term * term
-  | BoolTy
   | Lam of term binder
   | App of term * term
   | Pi of term * term binder
@@ -37,8 +34,6 @@ type term =
 
 type value =
   | VNeu of neutral
-  | VBool of bool
-  | VBoolTy
   | VLam of (value -> value)
   | VPi of value * (value -> value)
   | VTuple of value * value
@@ -57,7 +52,6 @@ type value =
 
 and neutral =
   | NVar of atom
-  | NCond of neutral * (value -> value) * value * value
   | NApp of neutral * value
   | NFst of neutral
   | NSnd of neutral
@@ -69,10 +63,6 @@ let traverse map_free map_bound term =
     match term with
     | Free a -> ( match map_free i a with Some t -> t | _ -> term)
     | Bound j -> ( match map_bound i j with Some t -> t | _ -> term)
-    | Bool _ -> term
-    | Cond (c, t, b, b') ->
-        Cond (aux i c, Binder.weaken aux i t, aux i b, aux i b')
-    | BoolTy -> BoolTy
     | Lam b -> Lam (Binder.weaken aux i b)
     | App (t, t') -> App (aux i t, aux i t')
     | Pi (t, b) -> Pi (aux i t, Binder.weaken aux i b)

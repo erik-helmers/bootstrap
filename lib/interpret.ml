@@ -15,20 +15,6 @@ let rec interpret env t =
   | Free a -> (
       match Env.find_opt a env with Some v -> v | _ -> VNeu (NVar a))
   | Bound _ -> failwith "interpret: bound term are illegal here"
-  | Bool t -> VBool t
-  | Cond (c, t, b, b') -> (
-      match interpret env c with
-      | VBool true -> interpret env b
-      | VBool false -> interpret env b'
-      | VNeu c ->
-          VNeu
-            (NCond
-               ( c,
-                 interpret_binder env t,
-                 interpret env b,
-                 interpret env b' ))
-      | _ -> failwith "interpret: condition is not a bool")
-  | BoolTy -> VBoolTy
   | Lam f -> VLam (interpret_binder env f)
   | App (f, t) -> (
       match interpret env f with

@@ -155,9 +155,14 @@ val cbool : term -> bool = <fun>
 
 ```ocaml
 # let _true = bool true;;
-val _true : term = true
+val _true : term = (1+
+  0
+  :
+  Enum{'false 'true})
 # let _false = bool false;;
-val _false : term = false
+val _false : term = (0
+  :
+  Enum{'false 'true})
 # let _bool b = norm_equal b _true;; 
 val _bool : term -> bool = <fun>
 ```
@@ -195,14 +200,63 @@ val bcond : term -> term -> term -> term = <fun>
     bcond p (bcond q _true _false)
              _false);;
 val tand : term = (fn p ->
-  (fn q -> (cond p [_ bool] (cond q [_ bool] true false) false)))
+  (fn q ->
+  record
+  p
+  as
+  _
+  return
+  bool
+  with
+  (
+    (0
+    :
+    Enum{'false 'true}),
+    (
+      record
+      q
+      as
+      _
+      return
+      bool
+      with
+      ((0 : Enum{'false 'true}), ((1+ 0 : Enum{'false 'true}), nil)),
+      nil
+    )
+  )))
 # let tor = fn2 "p" "q" (fun p q -> 
     bcond p _true
            (bcond q _true _false));;
 val tor : term = (fn p ->
-  (fn q -> (cond p [_ bool] true (cond q [_ bool] true false))))
+  (fn q ->
+  record
+  p
+  as
+  _
+  return
+  bool
+  with
+  (
+    record
+    q
+    as
+    _
+    return
+    bool
+    with
+    ((0 : Enum{'false 'true}), ((1+ 0 : Enum{'false 'true}), nil)),
+    ((1+ 0 : Enum{'false 'true}), nil)
+  )))
 # let tnot = fn "p" (fun p -> bcond p _false _true);;
-val tnot : term = (fn p -> (cond p [_ bool] false true))
+val tnot : term = (fn p ->
+  record
+  p
+  as
+  _
+  return
+  bool
+  with
+  ((1+ 0 : Enum{'false 'true}), ((0 : Enum{'false 'true}), nil)))
 ```
 
 
