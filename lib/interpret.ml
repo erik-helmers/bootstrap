@@ -24,6 +24,7 @@ let rec interpret env t =
                  interpret env b,
                  interpret env b' ))
       | _ -> failwith "interpret: condition is not a bool")
+  | BoolTy -> VBoolTy
   | Lam f -> VLam (interpret_binder env f)
   | App (f, t) -> (
       match interpret env f with
@@ -43,6 +44,8 @@ let rec interpret env t =
       | VNeu n -> VNeu (NSnd n)
       | _ -> failwith "interpret: value is not a tuple")
   | Sigma (t, f) -> VSigma (interpret env t, interpret_binder env f)
+  | Annot (x, _) -> interpret env x
+  | Star -> VStar
 
 and interpret_binder env b x =
   let (arg : atom), body = open_ b in

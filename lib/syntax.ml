@@ -6,13 +6,17 @@ let binder name body =
 
 let atom name = Atom.make name
 let var name = Free (atom name)
+let avar atom = Free atom
 
 (* Booleans *)
 let bool v = Bool v
+let true_ = Bool true
+let false_ = Bool false
 let condition c x t b b' = Cond (c, binder x t, b, b')
 
 (* shorthand for uniform type in branches *)
 let cond c t b b' = Cond (c, binder "_" (fun _ -> t), b, b')
+let bool_ty = BoolTy
 
 (* Pi related terms  *)
 let fn x body = Lam (binder x body)
@@ -28,3 +32,7 @@ let tuple (t, t') = Tuple (t, t')
 let first t = Fst t
 let second t = Snd t
 let sigma x t t' = Sigma (t, binder x t')
+
+(* Typing *)
+let annot x t = Annot (x, t)
+let star = Star

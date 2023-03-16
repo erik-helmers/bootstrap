@@ -40,13 +40,10 @@ Lam
 
 Pi and sigma terms : 
 ```ocaml
-# let star = var "*";;
-val star : term = Free {uid = 10; name = "*"}
 # pi "x" star (fun x -> x);;
-- : term = Pi (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Pi (Star, {name = "x"; scoped = Bound 0})
 # sigma "x" star (fun x -> x);;
-- : term =
-Sigma (Free {uid = 10; name = "*"}, {name = "x"; scoped = Bound 0})
+- : term = Sigma (Star, {name = "x"; scoped = Bound 0})
 ```
 We can be pretty confident in our constructors now. Let's enable pretty printing.
 
@@ -86,6 +83,12 @@ t)
 t)
 # sigma  "x" (var "*") (fun x -> x);;
 - : term = Σ(x : *).x
+# annot (var "x") (var "t");;
+- : term = (x
+:
+t)
+# star;;
+- : term = *
 ```
 # Types
 ## Bindings
@@ -218,3 +221,142 @@ val weird_id : term = (fn x -> (fst ((fn x -> (x, x)) x)))
 - : bool = true
 ```
 
+
+# Typing 
+
+We are now pretty confident with the `interpret` and `quote` functions, let's add handy operators for them.
+```ocaml
+# let (?$) = interpret;;
+val ( ?$ ) : term -> value = <fun>
+# let (?:) = quote;;
+val ( ?: ) : value -> term = <fun>
+```
+
+
+And here are a few helpers
+```ocaml
+# open Typing;;
+# let ctx = ref Ctx.empty;;
+val ctx : '_weak1 Map.t ref = {contents = <abstr>}
+# let assume a v = ctx := Ctx.add a v !ctx;; 
+val assume : atom -> '_weak1 -> unit = <fun>
+# let check t ty = check !ctx t ty;;
+val check : term -> value -> unit = <fun>
+# let synth t = synth !ctx t;;
+val synth : term -> value = <fun>
+```
+
+## Misc
+
+```ocaml
+# check star ?$star;;
+- : unit = ()
+# check star ?$bool_ty;;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+```
+
+## Pi
+
+First we check the `(Lam)` rule, then `(App)` with and without neutral values.
+
+```ocaml
+# let aint, ax, ay = atom "int", atom "x", atom "y";; 
+val aint : atom = int
+val ax : atom = x
+val ay : atom = y
+# let int, x, y = avar aint, avar ax, avar ay;; 
+val int : term = int
+val x : term = x
+val y : term = y
+# assume aint ?$star; assume ax ?$int; assume ay ?$ int;; 
+- : unit = ()
+# let int_id = fn "x" (fun x -> x);;
+val int_id : term = (fn x -> x)
+# let int_id_ty = pi "_" int (fun _ -> int);;
+val int_id_ty : term = Π(_ : int).int
+# let int_id_vty = interpret int_id_ty;;
+val int_id_vty : value = VPi (VNeu (NVar int), <fun>)
+# check int_id int_id_vty;;
+- : unit = ()
+# check int_id ?$(pi "_" int (fun _ -> bool_ty));;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = int}.
+# synth (app (annot int_id int_id_ty) (x));;
+- : value = VNeu (NVar int)
+# let f =  atom "f";;
+val f : atom = f
+# assume f int_id_vty;;
+- : unit = ()
+# synth (app (avar f) x);;
+- : value = VNeu (NVar int)
+```
+
+Then we have the `(Pi)` rule.
+
+```ocaml
+# check (pi "_" int (fun _ -> int)) ?$star;;
+- : unit = ()
+```
+
+
+## Booleans 
+
+Here are the happy case, and the three sad cases (bad condition, type or branch type).
+
+```ocaml
+# let t x = cond x star bool_ty star;;
+val t : term -> term = <fun>
+# check (condition true_ "x" t true_ bool_ty)  ?$(t true_);;
+- : unit = ()
+# check (condition star "x" t true_ bool_ty )  ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+# check (condition true_ "x" (fun _ -> true_) true_ bool_ty )  ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = *; got = bool_ty}.
+# check (condition true_ "x" t star bool_ty) ?$(t true_);;
+Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+```
+
+## Sigma 
+
+Now let's test the `(Tuple)` rule, then `(Fst)` and `(Snd)` with and without neutral values.
+
+```ocaml
+# let int_pair = tuple (x, y);;
+val int_pair : term = (x, y)
+# let int_pair_ty = sigma "_" int (fun _ -> int);;
+val int_pair_ty : term = Σ(_ : int).int
+# let int_pair_vty = interpret int_pair_ty;;
+val int_pair_vty : value = VSigma (VNeu (NVar int), <fun>)
+# check int_pair int_pair_vty;;
+- : unit = ()
+# synth (first (annot int_pair int_pair_ty));;
+- : value = VNeu (NVar int)
+# synth (second (annot int_pair int_pair_ty));;
+- : value = VNeu (NVar int)
+```
+
+Then we have the `(Sigma)` rule.
+
+```ocaml
+# check (sigma "_" int (fun _ -> int)) ?$star;;
+- : unit = ()
+# check (sigma "_" star (fun a -> a)) ?$star;;
+- : unit = ()
+```
+
+## Some more
+
+```ocaml
+# let either x = cond x star int bool_ty;;
+val either : term -> term = <fun>
+# let f = fn "a" (fun a -> condition a "a" either (x) true_) ;;
+val f : term = (fn a -> (cond a [a (cond a [_ *] int bool_ty)] x true))
+# let fty = pi "x" bool_ty either;;
+val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
+# check f ?$fty;;
+- : unit = ()
+# synth (app (annot f fty) true_);;
+- : value = VNeu (NVar int)
+# synth (app (annot f fty) false_);;
+- : value = VBoolTy
+```
+    
