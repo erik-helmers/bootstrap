@@ -36,6 +36,8 @@ type term =
   | DSigma of term * term binder
   | Decode of term * term
   | DescTy
+  | Fix of term
+  | Ctor of term
 [@@deriving eq]
 
 type value =
@@ -60,6 +62,8 @@ type value =
   | VDPi of value * (value -> value)
   | VDSigma of value * (value -> value)
   | VDescTy
+  | VFix of value
+  | VCtor of value
 
 and neutral =
   | NVar of atom
@@ -102,6 +106,8 @@ let traverse map_free map_bound term =
     | DSigma (t, t') -> DSigma (aux i t, Binder.weaken aux i t')
     | Decode (t, t') -> Decode (aux i t, aux i t')
     | DescTy -> DescTy
+    | Fix t -> Fix (aux i t)
+    | Ctor t -> Ctor (aux i t)
   in
   aux 0 term
 

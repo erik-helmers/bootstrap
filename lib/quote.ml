@@ -31,6 +31,8 @@ let rec quote env = function
   | VDPi (v, v') -> DPi (quote env v, quote_binder env v')
   | VDSigma (v, v') -> DSigma (quote env v, quote_binder env v')
   | VDescTy -> DescTy
+  | VFix v -> Fix (quote env v)
+  | VCtor v -> Ctor (quote env v)
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)

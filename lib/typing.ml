@@ -102,6 +102,13 @@ and check ctx t ty =
       check ctx s VStar;
       check_binder ctx d (interpret s) (fun _ -> VDescTy)
   | DescTy -> ensure VStar ty
+  | Fix d ->
+      ensure VStar ty;
+      check ctx d VDescTy
+  | Ctor t -> (
+      match ty with
+      | VFix d -> check ctx t (interpret (Decode (quote d, Fix (quote d))))
+      | _ -> failwith "check: unexpected ctor")
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

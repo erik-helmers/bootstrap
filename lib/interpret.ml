@@ -91,6 +91,8 @@ let rec interpret env t =
       in
       aux (interpret env d) t
   | DescTy -> VDescTy
+  | Fix t -> VFix (interpret env t)
+  | Ctor t -> VCtor (interpret env t)
 
 and interpret_binder env b x =
   let arg, body = open_ b in
