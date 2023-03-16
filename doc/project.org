@@ -1,0 +1,440 @@
+#+title: Bootstrap
+#+author: Erik Helmers
+
+#+startup: latexpreview fold
+
+#+latex_header: \usepackage{proof}
+#+latex_header: \usepackage{mathpartir}
+#+latex_header: \usepackage{amsmath,amssymb,amsthm,textcomp}
+#+latex_header: \usepackage{listofitems}
+#+latex_header: \usepackage{bssetup}
+#+latex_header: \usepackage{xparse}
+
+
+#+name: bssetup
+#+begin_src latex :tangle bssetup.sty :exports none
+
+
+% Construit une substitution sur une liste #1
+% définie avec \readlist et pour valeur par défaut #2
+% Substitution
+\newcommand{\varlist}[3]{% 1 = symbol list, 2 = default command, 3 = index
+  \ifnum #3>\listlen{#1}[]%
+  #2{#3}%
+  \else #1[#3]
+  \fi
+}
+
+% Declarations
+
+
+\newcounter{declfirstrule} % 0 : this is the first rule / 1 : false
+
+
+\newcommand{\drule}[2]{%
+  \ifnum\value{declfirstrule}=0\stepcounter{declfirstrule}
+    &::=& #1 &\quad \text{#2}\\
+  \else
+    &|& #1 &\quad \text{#2}\\
+  \fi
+}
+
+\newenvironment{decl}[1]{
+  \setcounter{declfirstrule}{0}
+  \[\begin{array}{lcll}
+    #1
+    }{\end{array}\]}
+
+  % Term symbols
+
+  \newcommand{\tid}[1]{\text{#1}}
+
+  % Expression term identifiers
+  \readlist*\tesyms{e,e',e''}
+  \newcommand{\tedflt}[1]{e_{#1}}
+  \newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
+
+  % Term type identifiers
+  \readlist*\ttysyms{\sigma, \sigma', \sigma''}
+  \newcommand{\ttydflt}[1]{\sigma_{#1}}
+  \newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
+
+  % Term kind identifiers
+  \readlist*\tksyms{\kappa, \kappa', \kappa''}
+  \newcommand{\tkdflt}[1]{\kappa_{#1}}
+  \newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
+
+  % Term variables (used in binders)
+  \readlist*\tvsyms{x, y, z}
+  \newcommand{\tvdflt}[1]{x_{#1}}
+  \newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
+
+  % Type of types
+  \newcommand{\tstar}{\star}
+  \newcommand{\tsubst}[3]{#1[#2 \mapsto #3]}
+
+
+  % Value symbols
+
+  % Value identifiers
+  \readlist*\vesyms{\nu,\nu',\nu''}
+  \newcommand{\vedflt}[1]{\nu_{#1}}
+  \newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
+
+  % Type identifiers
+  \readlist*\vtysyms{\tau, \tau', \tau''}
+  \newcommand{\vtydflt}[1]{\tau_{#1}}
+  \newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
+
+
+  % Variables
+  \readlist*\vvsyms{x, y, z}
+  \newcommand{\vvdflt}[1]{x_{#1}}
+  \newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
+
+  % Type of types
+  \newcommand{\vstar}{\star}
+
+  % Neutrals
+
+  % Variable
+  \readlist*\vnsyms{n, n', n''}
+  \newcommand{\vndflt}[1]{n_{#1}}
+  \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+
+  % Symbols
+  \newcommand{\evalsto}[2]{#1 \Downarrow #2}
+  \newcommand{\tycheck}[2]{#1 \Leftarrow #2}
+  \newcommand{\tysynth}[2]{#1 \Rightarrow #2}
+
+  \newcommand{\ctx}{\Gamma}
+  \newcommand{\ctxmap}{\vdash}
+  \newcommand{\ctxEmpty}{\Gamma}
+  \newcommand{\ctxValid}[1]{\text{valid}(#1)}
+
+
+
+  %%% Pi constructors, eliminators and types
+  % Lambda
+  \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
+  % App
+  \newcommand{\tapp}[2]{#1\ #2}
+  % Pi
+  \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
+  %% Values
+  % Lambda
+  \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
+  % App (neutral)
+  \newcommand{\napp}[2]{#1\ #2}
+  % Pi
+  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+
+  %%% Sigma
+  % Tuple
+  \newcommand{\ttup}[2]{(#1,#2)}
+  % Fst
+  \newcommand{\tfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\tsnd}[1]{\text{snd}\ #1}
+  % Sigma
+  \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
+  %% Values
+  % Tuple
+  \newcommand{\vtup}[2]{(#1,#2)}
+  % Fst
+  \newcommand{\nfst}[1]{\text{fst}\ #1}
+  % Snd
+  \newcommand{\nsnd}[1]{\text{snd}\ #1}
+  % Sigma
+  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+
+  %%% Booleans
+  \newcommand{\ttrue}{\text{true}}
+  \newcommand{\tfalse}{\text{false}}
+  \newcommand{\tcond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
+  \newcommand{\tboolty}{\text{bool}}
+  %% Values
+  \newcommand{\vtrue}{\text{true}}
+  \newcommand{\vfalse}{\text{false}}
+  \newcommand{\ncond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
+  \newcommand{\vboolty}{\text{bool}}
+
+#+end_src
+
+
+* Minimal calculus
+** Syntax
+
+\begin{decl}{\te, \tty, \tk}
+ \drule{\te: \tty                 }{annotated term}
+ \drule{\tv                       }{variable}
+ \drule{\tlam{x}{\te}             }{lambda}
+ \drule{\tapp{\te}{\te[2]}        }{application}
+ \drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
+ \drule{\ttup{\te}{\te[2]}        }{tuple}
+ \drule{\tfst{\te}                }{fst}
+ \drule{\tsnd{\te}                }{snd}
+ \drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
+ \drule{\tstar                    }{type of types}
+\end{decl}
+
+
+where $\te$, $\tty$, $\tk$ represent general expressions, types and kinds respectively.
+
+** Context
+
+\begin{decl}{\ctx}
+    \drule{\epsilon}{empty context}
+    \drule{\ctx, \tv:\vty}{adding a variable}
+\end{decl}
+
+\begin{mathpar}
+\inferrule*{  }{ \ctxValid{\epsilon} }
+\inferrule*
+    { \ctxValid{\ctx} \\ \ctx \ctxmap \tycheck{\vty}{\vstar} }
+    { \ctxValid{\ctx, \tv : \vty} }
+\end{mathpar}
+
+** Evaluation
+
+\begin{decl}{\ve, \vty}
+    \drule{\vn                         }{neutral term}
+    \drule{\vlam {\vv} {\ve}           }{lambda}
+    \drule{\vpi {\tv} {\vty} {\vty[2]} }{dependent function space}
+    \drule{\vtup {\ve} {\ve[2]}        }{tuple}
+    \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
+    \drule{\vstar                      }{type of types}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{\vv                         }{variable }
+    \drule{\napp{\vn}{\ve}             }{neutral app}
+    \drule{\nfst{\vn}                  }{neutral first projection}
+    \drule{\nsnd{\vn}                  }{neutral second projection}
+\end{decl}
+
+\begin{mathpar}
+
+
+\inferrule*[right=(Star)] {\\} { \evalsto {\tstar}{\vstar} } \and
+
+\inferrule*[right=(Var)]{\\}{ \evalsto {\tv}{\vv} } \and
+
+\inferrule*[right=(Ann)]
+  { \evalsto {\te}{\ve} }
+  { \evalsto {\te:\tty}{\ve} }
+\and
+
+\inferrule*[right=(Lam)]
+    { \evalsto {\te}{\ve} }
+    { \evalsto {\tlam{\tv}{\te}}{\vlam{x}{\ve}} }
+\and
+\inferrule*[right=(Tuple)]
+    { \evalsto {\te}{\ve} \\
+      \evalsto {\te[2]}{\ve[2]} }
+    { \ttup{\te}{\te[2]} \evalsto \ttup{\ve}{\ve[2]} }
+\and
+
+\inferrule*[right=(App)]
+  { \evalsto {\te}{\vlam{\vv}{\ve}} \\
+    \evalsto {\tsubst{\ve[1]}{\tv}{\te[2]}}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\ve[2]} }
+\and
+\inferrule*[right=(NApp)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\napp{\vn}{\ve[2]}} }
+\and
+
+\inferrule*[right=(Fst)]
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tfst{\te}}{\ve} }
+\and
+
+\inferrule*[right=(Snd)]
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tsnd{\te}}{\ve[2]}  }
+\and
+
+\inferrule*[right=(NFst)]
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tfst{\te}}{\nfst{\vn}} }
+\and
+
+\inferrule*[right=(NSnd)]
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tsnd{\te}}{\nsnd{\vn}} }
+\and
+
+\inferrule*[right=(Pi)]
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tpi{\tv}{\tty}{\tty[2]}}{\vpi{\vv}{\vty}{\vty[2]}} }
+\and
+
+\inferrule*[right=(Sigma)]
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tsig{\tv}{\tty}{\tty[2]}}{\vsig{\vv}{\vty}{\vty[2]}} }
+\and
+
+
+\end{mathpar}
+
+** Typing
+
+In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthezises to \(\vty\) while \( \tycheck{e}{\vty} \) is checkable.
+
+\begin{mathpar}
+\centering
+
+\inferrule*[right=(Chk)]
+  { \ctx \ctxmap \tysynth {\te}{\vty} }
+  { \ctx \ctxmap \tycheck{\te}{\vty} }
+\and
+
+\inferrule*[right=(Ann)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\
+   \ctx \ctxmap \tycheck{\te}{\vty}}
+  { \ctx \ctxmap \tysynth {(\te:\tty)}{\vty} }
+\and
+
+
+\inferrule*[right=(Star)]
+  { }
+  { \ctx \ctxmap \tycheck{\tstar}{\vstar} }
+\and
+
+
+\inferrule*[right=(Var)]
+   { \ctx(\tv) = \vty }
+   { \ctx \ctxmap \tysynth {\tv}{\vty} }
+\and
+
+\inferrule*[right=(Lam)]
+  { \ctx,\tv : \vty \ctxmap \tycheck{\te}{\vty[2]} }
+  { \ctx \ctxmap \tycheck{\vlam{\tv}{\te}}{\vpi{\tv}{\vty}{\vty[2]}} }
+\and
+
+\inferrule*[right=(Tuple)]
+  { \ctx \ctxmap \tycheck{\te}{\vty} \\  \ctx \ctxmap \tycheck{\te[2]}{\vty[2]}}
+  { \ctx \ctxmap \tycheck {\vtup{\te}{\te[2]}}{\vsig{\tv}{\vty}{\vty[2]}}}
+\and
+
+\inferrule*[right=(App)]
+  { \ctx \ctxmap \tysynth {\te}{\vpi{x}{\vty}{\vty[2]}}  \\  \ctx \ctxmap \tycheck {\te[2]}{\vty} \\ \evalsto {\tsubst{\vty[2]}{\tv}{\te[2]}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tapp{\te}{\te[2]}}{\vty[3]} }
+\and
+
+\inferrule*[right=(Fst)]
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} }
+  { \ctx \ctxmap \tysynth {\tfst{\te}}{\vty} }
+\and
+
+\inferrule*[right=(Snd)]
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} \\
+    \evalsto {\tsubst{\vty[2]}{\tv}{\tfst{e}}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tsnd{\te}}{\vty[3]} }
+\and
+
+
+\inferrule*[right=(Pi)]
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tpi{\tv}{\tty}{\tty[2]}}{\vstar} }
+\and
+
+\inferrule*[right=(Sigma)]
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tsig{\tv}{\tty}{\tty[2]}}{\vstar} }
+\and
+\end{mathpar}
+
+
+* Interlude : booleans
+** Syntax
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\ttrue}{}
+ \drule{\tfalse}{}
+ \drule{\tcond{\te}{\tv}{\tty}{\te[2]}{\te[3]}}{condition}
+ \drule{\tboolty}{type of a bool}
+\end{decl}
+
+** Evaluation
+
+\begin{decl}{\ve, \vty}
+    \drule{...}{}
+    \drule{\vtrue}{}
+    \drule{\vfalse}{}
+    \drule{\vboolty}{}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{...}{}
+    \drule{\ncond{\ve}{\tv}{\vty}{\ve[2]}{\ve[3]}}{}
+\end{decl}
+
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \evalsto {\ttrue}{\vtrue} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \evalsto {\tfalse}{\vfalse} }
+\and
+
+\\\\
+
+\inferrule*[right=(CondT)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[2]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(CondF)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[3]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(NCond)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[1]} \\ \evalsto {\te[3]}{\ve[2]}}
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ncond{\vn}{\tv}{\vty}{\ve[1]}{\ve[2]}} }
+\and
+
+\\\\
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \evalsto{\tboolty}{\vboolty} }
+\and
+
+\end{mathpar}
+
+** Typing
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \tycheck{\ttrue}{\vboolty} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \tycheck{\tfalse}{\vboolty} }
+\and
+
+\inferrule*[right=(Cond)]
+  { \ctx \ctxmap \tycheck{\te}{\vboolty} \\
+    \ctx,\tv:\vboolty \ctxmap \tycheck{B}{\vstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+ }
+  { \ctx \ctxmap \tysynth {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\vty} }
+\and
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \tycheck{\tboolty}{\vstar} }
+\and
+\end{mathpar}
