@@ -11,8 +11,6 @@ let index_of env var =
 
 let rec quote env = function
   | VNeu n -> quote_neutral env n
-  | VBool b -> Bool b
-  | VBoolTy -> BoolTy
   | VLam f -> Lam (quote_binder env f)
   | VPi (v, f) -> Pi (quote env v, quote_binder env f)
   | VTuple (v, v') -> Tuple (quote env v, quote env v')
@@ -31,9 +29,6 @@ let rec quote env = function
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)
-  | NCond (n, t, v, v') ->
-      Cond
-        (quote_neutral env n, quote_binder env t, quote env v, quote env v')
   | NApp (n, v) -> App (quote_neutral env n, quote env v)
   | NFst n -> Fst (quote_neutral env n)
   | NSnd n -> Snd (quote_neutral env n)

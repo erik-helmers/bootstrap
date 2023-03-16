@@ -8,16 +8,6 @@ let atom name = Atom.make name
 let var name = Free (atom name)
 let avar atom = Free atom
 
-(* Booleans *)
-let bool v = Bool v
-let true_ = Bool true
-let false_ = Bool false
-let condition c x t b b' = Cond (c, binder x t, b, b')
-
-(* shorthand for uniform type in branches *)
-let cond c t b b' = Cond (c, binder "_" (fun _ -> t), b, b')
-let bool_ty = BoolTy
-
 (* Pi related terms  *)
 let fn x body = Lam (binder x body)
 let fn2 x y body = fn x (fun x -> fn y (fun y -> body x y))
@@ -61,3 +51,15 @@ let enum_idx i =
 (* Record and case *)
 let record e x p = Record (e, binder x p)
 let case e x p cs = Case (e, binder x p, cs)
+
+(* Booleans *)
+
+let bool_labels = labels (List.map label [ "false"; "true" ])
+let bool_ty = enum bool_labels
+let false_ = annot (enum_idx 0) bool_ty
+let true_ = annot (enum_idx 1) bool_ty
+let bool v = if v then true_ else false_
+let condition c x t b b' = case c x t (tuple (b', tuple (b, nil)))
+
+(* shorthand for uniform type in branches *)
+let cond c t b b' = condition c "_" (fun _ -> t) b b'

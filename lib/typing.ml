@@ -13,12 +13,6 @@ let rec synth ctx t =
       try Ctx.find a ctx
       with Not_found -> failwith "synth: unknown free ")
   | Bound _ -> failwith "synth : bound terms are illegal here"
-  | Cond (c, t, b, b') ->
-      check ctx c VBoolTy;
-      check ctx (Lam t) (VPi (VBoolTy, fun _ -> VStar));
-      check ctx b @@ interpret (App (Lam t, Bool true));
-      check ctx b' @@ interpret (App (Lam t, Bool false));
-      interpret (App (Lam t, c))
   | App (f, x) -> (
       match synth ctx f with
       | VPi (t, t') ->
@@ -57,8 +51,6 @@ and check ctx t ty =
   in
   match t with
   | Star -> ensure VStar ty
-  | BoolTy -> ensure VStar ty
-  | Bool _ -> ensure VBoolTy ty
   | Pi (t, t') ->
       ensure ty VStar;
       check ctx t VStar;

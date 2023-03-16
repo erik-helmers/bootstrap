@@ -50,12 +50,6 @@ and term e =
   match e with
   | Free a -> atom a
   | Bound i -> brackets @@ OCaml.int i
-  | Bool true -> string "true"
-  | Bool false -> string "false"
-  | Cond (cnd, t, b, b') ->
-      let arg, body = open_ t in
-      cond (term cnd) (atom arg) (term body) (term b) (term b')
-  | BoolTy -> string "bool_ty"
   | Lam f ->
       let arg, body = open_ f in
       lam (atom arg) (term body)

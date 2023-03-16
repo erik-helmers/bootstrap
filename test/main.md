@@ -62,10 +62,6 @@ Here is a reminder of the format for different terms.
 val x : atom = x
 # Free x;;
 - : term = x
-# Bool true, Bool false;;
-- : term * term = (true, false)
-# cond (var "x") (var "*") (var "y") (var "z");;
-- : term = (cond x [_ *] y z)
 # fn "x" (fun x -> x);;
 - : term = (fn x -> x)
 # app (var "f") (var "x");;
@@ -256,7 +252,7 @@ val synth : term -> value = <fun>
 # check star ?$star;;
 - : unit = ()
 # check star ?$bool_ty;;
-Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+Exception: Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = *}.
 ```
 
 ## Pi
@@ -283,7 +279,8 @@ val int_id_vty : value = VPi (VNeu (NVar int), <fun>)
 # check int_id int_id_vty;;
 - : unit = ()
 # check int_id ?$(pi "_" int (fun _ -> bool_ty));;
-Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = int}.
+Exception:
+Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = int}.
 # synth (app (annot int_id int_id_ty) (x));;
 - : value = VNeu (NVar int)
 # let f =  atom "f";;
@@ -312,11 +309,11 @@ val t : term -> term = <fun>
 # check (condition true_ "x" t true_ bool_ty)  ?$(t true_);;
 - : unit = ()
 # check (condition star "x" t true_ bool_ty )  ?$(t true_);;
-Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+Exception: Failure "synth : term type is not synthetisable".
 # check (condition true_ "x" (fun _ -> true_) true_ bool_ty )  ?$(t true_);;
-Exception: Scratch.Typing.Mismatch {expected = *; got = bool_ty}.
+Exception: Scratch.Typing.Mismatch {expected = *; got = Enum{'false 'true}}.
 # check (condition true_ "x" t star bool_ty) ?$(t true_);;
-Exception: Scratch.Typing.Mismatch {expected = bool_ty; got = *}.
+Exception: Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = *}.
 ```
 
 ## Sigma 
@@ -354,15 +351,38 @@ Then we have the `(Sigma)` rule.
 # let either x = cond x star int bool_ty;;
 val either : term -> term = <fun>
 # let f = fn "a" (fun a -> condition a "a" either x true_) ;;
-val f : term = (fn a -> (cond a [a (cond a [_ *] int bool_ty)] x true))
+val f : term = (fn a ->
+  record
+  a
+  as
+  a
+  return
+  record
+  a
+  as
+  _
+  return
+  *
+  with
+  (Enum{'false 'true}, (int, nil))
+  with
+  ((1+ 0 : Enum{'false 'true}), (x, nil)))
 # let fty = pi "x" bool_ty either;;
-val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
+val fty : term = Π(x : Enum{'false 'true}).
+  record
+  x
+  as
+  _
+  return
+  *
+  with
+  (Enum{'false 'true}, (int, nil))
 # check f ?$fty;;
 - : unit = ()
 # synth (app (annot f fty) true_);;
 - : value = VNeu (NVar int)
 # synth (app (annot f fty) false_);;
-- : value = VBoolTy
+- : value = VEnum (VConsL (VLabel "true", VConsL (VLabel "false", VNilL)))
 ```
     
 ## Unit and nil
@@ -388,7 +408,8 @@ val fty : term = Π(x : bool_ty).(cond x [_ *] int bool_ty)
 # check (labels [label "toto"; label "tata"]) ?$labels_ty;;
 - : unit = ()
 # check (labels [true_]) ?$labels_ty;;
-Exception: Scratch.Typing.Mismatch {expected = label; got = bool_ty}.
+Exception:
+Scratch.Typing.Mismatch {expected = label; got = Enum{'false 'true}}.
 ```
 
 
@@ -422,124 +443,21 @@ Exception: Failure "check: unexpected index".
 # let ty = norm (record (labels []) "_" (fun _ -> bool_ty));;
 val ty : term = unit
 # let ty = norm (record lbool "_" (fun _ -> bool_ty));;
-val ty : term = Σ(q0 : bool_ty).Π(q1 : bool_ty).unit
+val ty : term = Σ(q0 : Enum{'false 'true}).Π(q1 : Enum{'false 'true}).unit
 # let cs = tuple (true_, tuple (false_, nil));;
-val cs : term = (true, (false, nil))
+val cs : term = ((1+ 0 : Enum{'false 'true}), ((0 : Enum{'false 'true}),
+  nil))
 # ?$(record lbool "_" (fun _ -> bool_ty));;
-- : value = VSigma (VBoolTy, <fun>)
+- : value =
+VSigma (VEnum (VConsL (VLabel "true", VConsL (VLabel "false", VNilL))),
+ <fun>)
 # check cs ?$(record lbool "_" (fun _ -> bool_ty)) ;;
 - : unit = ()
 # ?$(case (enum_idx 0) "_" (fun _ -> Star) cs) ;;
-- : value = VBool true
+- : value = VEnumSuc VEnumZe
 # ?$(case (enum_idx 1) "_" (fun _ -> Star) cs) ;;
-- : value = VBool false
+- : value = VEnumZe
 # ?$(case (enum_idx 2) "_" (fun _ -> Star) cs) ;;
 Exception: Failure "interpret: value is not a tuple".
-```
-
-# Redefinition of boolean
-
-It is now pretty easy to redefine `cond` as a normal construct, first with evaluation :
-
-```ocaml
-# let true2  = annot (enum_idx 0) (enum lbool);;
-val true2 : term = (0
-  :
-  Enum{'true 'false})
-# let false2 = annot (enum_idx 1) (enum lbool);;
-val false2 : term = (1+
-  0
-  :
-  Enum{'true 'false})
-# let branch = fn3 "t" "a" "b" (fun t a b -> fn "c" (fun c -> 
-     case c "x" (fun x -> app t x) (tuple (a, tuple(b, nil)))
-   ));;
-val branch : term = (fn t ->
-  (fn a ->
-  (fn b -> (fn c -> record c as x return (t x) with (a, (b, nil))))))
-# let b1 = app3 branch (fn "_" (fun _ -> int)) x y;;
-val b1 : term = ((((fn t ->
-  (fn a ->
-  (fn b -> (fn c -> record c as x return (t x) with (a, (b, nil))))))
-  (fn _ -> int))
-  x)
-  y)
-# ?$(app b1 true2);;
-- : value = VNeu (NVar x)
-# ?$(app b1 false2);;
-- : value = VNeu (NVar y)
-```
-
-And now with regard to typing : 
-
-```ocaml
-# let bool_ty2 = enum lbool;;
-val bool_ty2 : term = Enum{'true 'false}
-# let branch_ty = pi 
-    "t" (pi "_" bool_ty2 (fun _ -> star))
-    (fun t -> pi 
-    "a" (app t true2)
-    (fun a -> pi 
-    "b" (app t false2)
-    (fun b -> pi 
-    "c" bool_ty2
-    (fun c -> 
-       app t c 
-    ))));;
-val branch_ty : term = Π(t : Π(_ : Enum{'true 'false}).*).
-  Π(a : (t (0 : Enum{'true 'false}))).
-  Π(b : (t (1+ 0 : Enum{'true 'false}))).
-  Π(c : Enum{'true 'false}).(t c)
-# check branch ?$branch_ty;;
-- : unit = ()
-# let branch = annot branch branch_ty;;
-val branch : term = ((fn t ->
-  (fn a ->
-  (fn b -> (fn c -> record c as x return (t x) with (a, (b, nil))))))
-  :
-  Π(t : Π(_ : Enum{'true 'false}).*).
-  Π(a : (t (0 : Enum{'true 'false}))).
-  Π(b : (t (1+ 0 : Enum{'true 'false}))).
-  Π(c : Enum{'true 'false}).(t c))
-```
-
-Easy peasy.
-
-```ocaml
-# let b1 = app3 branch (fn "_" (fun _ -> int)) x y;;
-val b1 : term = (((((fn t ->
-  (fn a ->
-  (fn b -> (fn c -> record c as x return (t x) with (a, (b, nil))))))
-  :
-  Π(t : Π(_ : Enum{'true 'false}).*).
-  Π(a : (t (0 : Enum{'true 'false}))).
-  Π(b : (t (1+ 0 : Enum{'true 'false}))).
-  Π(c : Enum{'true 'false}).(t c))
-  (fn _ -> int))
-  x)
-  y)
-# synth (app b1 true2);;
-- : value = VNeu (NVar int)
-# synth (app b1 false2);;
-- : value = VNeu (NVar int)
-
-# let txn_ty = tuple(bool_ty, tuple(int, nil));;
-val txn_ty : term = (bool_ty, (int, nil))
-# let b2 = app3 branch (fn "x" (fun x -> case x "_" (fun _ -> star) txn_ty)) true_ x;;
-val b2 : term = (((((fn t ->
-  (fn a ->
-  (fn b -> (fn c -> record c as x return (t x) with (a, (b, nil))))))
-  :
-  Π(t : Π(_ : Enum{'true 'false}).*).
-  Π(a : (t (0 : Enum{'true 'false}))).
-  Π(b : (t (1+ 0 : Enum{'true 'false}))).
-  Π(c : Enum{'true 'false}).(t c))
-  (fn x -> record x as _ return * with (bool_ty, (int, nil))))
-  true)
-  x)
-# synth (app b2 true2);;
-- : value = VBoolTy
-# synth (app b2 false2);;
-- : value = VNeu (NVar int)
 ```
 
