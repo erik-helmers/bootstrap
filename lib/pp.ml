@@ -31,7 +31,22 @@ let fst t = app (string "fst") t
 let snd t = app (string "snd") t
 let annot x t = parens (x ^/^ colon ^/^ t)
 
-let rec term e =
+let list_of_labels ls =
+  let rec aux ls acc =
+    match ls with
+    | ConsL (l, ls) -> aux ls (l :: acc)
+    | NilL -> acc
+    | t -> t :: acc
+  in
+  aux ls []
+
+let rec labels ls = braces (flow_map (break 1) term (list_of_labels ls))
+
+and binder b =
+  let arg, body = open_ b in
+  (atom arg, term body)
+
+and term e =
   match e with
   | Free a -> atom a
   | Bound i -> brackets @@ OCaml.int i
@@ -56,6 +71,23 @@ let rec term e =
       sigma (atom arg) (term t) (term body)
   | Annot (x, t) -> annot (term x) (term t)
   | Star -> star
+  | Unit -> string "unit"
+  | Nil -> string "nil"
+  | LabelTy -> string "label"
+  | Label s -> squote ^^ string s
+  | LabelsTy -> string "labels"
+  | (NilL as ls) | (ConsL _ as ls) -> labels ls
+  | Enum ls -> string "Enum" ^^ labels ls
+  | EnumZe -> string "0"
+  | EnumSuc t -> string "1+" ^/^ term t
+  | Record (l, b) ->
+      let arg, body = binder b in
+      string "record" ^/^ term l ^/^ string "as" ^/^ arg
+      ^/^ string "return" ^/^ body
+  | Case (e, b, cs) ->
+      let arg, body = binder b in
+      string "record" ^/^ term e ^/^ string "as" ^/^ arg
+      ^/^ string "return" ^/^ body ^/^ string "with" ^/^ term cs
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

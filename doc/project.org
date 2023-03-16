@@ -160,6 +160,47 @@
   \newcommand{\ncond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
   \newcommand{\vboolty}{\text{bool}}
 
+
+  %%% Unit
+  \newcommand{\tnil}{\text{nil}}
+  \newcommand{\tunit}{\text{unit}}
+  \newcommand{\vnil}{\tnil}
+  \newcommand{\vunit}{\vunit}
+
+  %%% Label, labels
+  \readlist*\tlsyms{t, t', t''}
+  \newcommand{\tldflt}[1]{t_{#1}}
+  \newcommand{\tl}[1][1]{\varlist{\tlsyms}{\tldflt}{#1}}
+
+  \readlist*\tlssyms{l, l', l''}
+  \newcommand{\tlsdflt}[1]{t_{#1}}
+  \newcommand{\tls}[1][1]{\varlist{\tlssyms}{\tlsdflt}{#1}}
+
+  \newcommand{\tlabel}[1]{'\text{#1}}
+  \newcommand{\tlabelty}{\text{label}}
+  \newcommand{\tlsnil}{\text{nil}}
+  \newcommand{\tlscons}[2]{[#1\ #2]}
+  \newcommand{\tlabelsty}{\text{labels}}
+
+  \newcommand{\vlabel}[1]{\tlabel{#1}}
+  \newcommand{\vlabelty}{\tlabelty}
+  \newcommand{\vlsnil}{\tlsnil}
+  \newcommand{\vlscons}[2]{\tlscons{#1}{#2}}
+  \newcommand{\vlabelsty}{\tlabelsty}
+
+
+  %%% Enums
+  \newcommand{\teze}{0}
+  \newcommand{\tesuc}[1]{1{{+}}\ #1}
+  \newcommand{\trecord}[3]{\text{record}\ #1\ \text{as}\ #2\ \text{return}\ #3}
+  \newcommand{\tcase}[4]{\text{case}\ #1\ \text{as}\ #2\ \text{return}\ #3\ \text{with}\ #4}
+  \newcommand{\tenum}[1]{\text{enum}\ #1}
+
+  \newcommand{\veze}{\teze}
+  \newcommand{\vesuc}[1]{\tesuc{#1}}
+  \newcommand{\nrecord}[3]{\trecord{#1}{#2}{#3}}
+  \newcommand{\ncase}[4]{\tcase{#1}{#2}{#3}{#4}}
+  \newcommand{\venum}[1]{\tenum{#1}}
 #+end_src
 
 
@@ -436,5 +477,141 @@ In the following, \( \tysynth {\te}{\vty} \) is an expression whose type synthez
 \inferrule*[right=(BoolTy)]
   { }
   { \tycheck{\tboolty}{\vstar} }
+\and
+
+\end{mathpar}
+
+* Enumerations
+** Syntax
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\tnil}{}
+ \drule{\tunit}{}
+ \drule{\tlabel{\tl}}{label}
+ \drule{\tlabelty}{label type}
+ \drule{\tlsnil}{ }
+ \drule{\tlscons{\tl}{\tls}}{}
+ \drule{\tlabelsty}{labels type}
+\end{decl}
+** Evaluation
+
+\begin{mathpar}
+
+ \inferrule*[right=(RecordNil)]
+  { \evalsto {\tls} {\tlsnil} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\tunit} }
+\and
+
+ \inferrule*[right=(RecordCons)]
+  { \evalsto {\tls} {\tlscons{\tl}{\tls[2]}} \\
+    \evalsto {\tsubst{B}{\tv}{\teze}} {\vty} \\
+    \evalsto {\trecord{\tls[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}} {\vty[2]} }
+  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsig{\_}{\vty}{\vty[2]}} }
+\and
+
+
+ \inferrule*[right=(NRecord)]
+  { \evalsto {\tls} {\vn} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\nrecord{\vn}{\tv}{B}} }
+\and
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\teze} \\
+    \evalsto{\tfst{\tid{cs}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ve} }
+\and
+
+\inferrule*[right=(CaseSuc)]
+  { \evalsto{\te}{\tesuc{\te[2]}} \\
+    \evalsto{\tsnd{\tid{cs}}}{\tid{cs'}} \\
+    \evalsto{\tcase{\te[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}{\tid{cs'}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}
+             {\ve}}
+\and
+
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\vn} \\
+    \evalsto{\tid{cs}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ncase{\vn}{\tv}{B}{\ve}} }
+\and
+
+\end{mathpar}
+** Typing
+
+\begin{mathpar}
+
+ \inferrule*[right=(Nil)]
+  { }
+  {  \tycheck{\tnil}{\tunit} }
+\and
+
+\inferrule*[right=(Unit)]
+  { }
+  { \tycheck{\tunit}{\vstar} }
+\and
+
+ \inferrule*[right=(Label)]
+  { }
+  {  \tycheck {\tlabel{\tl}}{\tlabelty} }
+\and
+
+\inferrule*[right=(LabelTy)]
+  { }
+  { \tycheck {\tlabelty}{\vstar} }
+\and
+
+\\\\
+\inferrule*[right=(NilL)]
+  { }
+  { \tycheck {\tlsnil}{\tlabelsty} }
+\and
+\inferrule*[right=(ConsL)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \tycheck {\tlscons{\tl}{\tls}}{\tlabelsty} }
+\and
+
+\inferrule*[right=(LabelsTy)]
+  { }
+  { \tycheck {\tlabelsty}{\vstar} }
+\and
+
+\\\\
+
+
+\inferrule*[right=(Zero)]
+  { \ctx \ctxmap \tycheck{\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck{\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck{\teze}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Suc)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx \ctxmap \tycheck {n}{\tenum{\tls}}  }
+  { \ctx \ctxmap \tycheck {\tesuc{n}}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Enum)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck {\tenum{\tls}}{\vstar} }
+\and
+\\\\
+
+\inferrule*[right=(Record)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+ }
+  { \ctx \ctxmap \tysynth {\trecord{\tls}{\tv}{B}}{\vstar} }
+\and
+
+\inferrule*[right=(Case)]
+  { \ctx \ctxmap \tycheck {\te}{\tenum{\tls}} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+    \ctx \ctxmap \tycheck {\tid{cs}}{\trecord{\tls}{\tv}{B} }
+ }
+  { \ctx \ctxmap \tysynth {\tcase{\te}{\tv}{B}{\tid{cs}}}{\vty} }
 \and
 \end{mathpar}

@@ -36,3 +36,28 @@ let sigma x t t' = Sigma (t, binder x t')
 (* Typing *)
 let annot x t = Annot (x, t)
 let star = Star
+
+(* Unit and nil *)
+let unit = Unit
+let nil = Nil
+
+(* Labels *)
+let label_ty = LabelTy
+let label l = Label l
+let labels_ty = LabelsTy
+let consL l ls = ConsL (l, ls)
+let nilL = NilL
+let labels ls = List.fold_left (fun ls l -> consL l ls) NilL ls
+
+(* Enums *)
+let enum ls = Enum ls
+
+let enum_idx i =
+  let rec aux i acc =
+    match i with 0 -> acc | _ -> aux (i - 1) (EnumSuc acc)
+  in
+  aux i EnumZe
+
+(* Record and case *)
+let record e x p = Record (e, binder x p)
+let case e x p cs = Case (e, binder x p, cs)

@@ -4,6 +4,8 @@ type 'a binder = 'a Binder.t
 let equal_atom = Atom.equal
 let equal_binder = Binder.equal
 
+type label = string [@@deriving eq]
+
 type term =
   | Free of atom
   | Bound of int
@@ -19,6 +21,18 @@ type term =
   | Sigma of term * term binder
   | Annot of term * term
   | Star
+  | Unit
+  | Nil
+  | LabelTy
+  | Label of label
+  | LabelsTy
+  | NilL
+  | ConsL of term * term
+  | Enum of term
+  | EnumZe
+  | EnumSuc of term
+  | Record of term * term binder
+  | Case of term * term binder * term
 [@@deriving eq]
 
 type value =
@@ -30,6 +44,16 @@ type value =
   | VTuple of value * value
   | VSigma of value * (value -> value)
   | VStar
+  | VUnit
+  | VNil
+  | VLabelTy
+  | VLabel of string
+  | VLabelsTy
+  | VNilL
+  | VConsL of value * value
+  | VEnum of value
+  | VEnumZe
+  | VEnumSuc of value
 
 and neutral =
   | NVar of atom
@@ -37,6 +61,8 @@ and neutral =
   | NApp of neutral * value
   | NFst of neutral
   | NSnd of neutral
+  | NRecord of neutral * (value -> value)
+  | NCase of neutral * (value -> value) * value
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -56,6 +82,18 @@ let traverse map_free map_bound term =
     | Sigma (t, b) -> Pi (aux i t, Binder.weaken aux i b)
     | Annot (x, t) -> Annot (aux i x, aux i t)
     | Star -> Star
+    | Unit -> Unit
+    | Nil -> Nil
+    | LabelTy -> LabelTy
+    | Label s -> Label s
+    | LabelsTy -> LabelsTy
+    | NilL -> NilL
+    | ConsL (l, ls) -> ConsL (aux i l, aux i ls)
+    | Enum t -> Enum (aux i t)
+    | EnumZe -> EnumZe
+    | EnumSuc t -> EnumSuc (aux i t)
+    | Record (t, t') -> Record (aux i t, Binder.weaken aux i t')
+    | Case (e, t, cs) -> Case (aux i e, Binder.weaken aux i t, aux i cs)
   in
   aux 0 term
 
