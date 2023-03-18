@@ -11,22 +11,22 @@ let rec synth ctx t =
   match t with
   | Free a -> (
       try Ctx.find a ctx
-      with Not_found -> failwith "synth: unknown free ")
-  | Bound _ -> failwith "synth : bound terms are illegal here"
+      with Not_found -> raise (bad_term "synth: unknown free " t))
+  | Bound _ -> raise (bad_term "synth : bound terms are illegal here" t)
   | App (f, x) -> (
       match synth ctx f with
       | VPi (t, t') ->
           check ctx x t;
           t' (interpret x)
-      | _ -> failwith "synth : term is not applicable")
+      | _ -> raise (bad_term "synth : term is not applicable" f))
   | Fst e -> (
       match synth ctx e with
       | VSigma (t, _) -> t
-      | _ -> failwith "synth : term is not a tuple")
+      | _ -> raise (bad_term "synth : term is not a tuple" e))
   | Snd e -> (
       match synth ctx e with
       | VSigma (_, t) -> t (interpret (Snd e))
-      | _ -> failwith "synth : term is not a tuple")
+      | _ -> raise (bad_term "synth : term is not a tuple" e))
   | Annot (x, t) ->
       check ctx t VStar;
       let ty = interpret t in
@@ -42,8 +42,8 @@ let rec synth ctx t =
           check_binder ctx t (VEnum l) (fun _ -> VStar);
           check ctx cs (interpret (Record (quote l, t)));
           interpret (App (Lam t, e))
-      | _ -> failwith "synth: term is not an enum")
-  | _ -> failwith "synth : term type is not synthetisable"
+      | _ -> raise (bad_term "synth: term is not an enum" e))
+  | _ -> raise (bad_term "synth : term type is not synthetisable" t)
 
 and check ctx t ty =
   let ensure ty exp =
@@ -52,45 +52,45 @@ and check ctx t ty =
   match t with
   | Star -> ensure VStar ty
   | Pi (t, t') ->
-      ensure ty VStar;
+      ensure VStar ty;
       check ctx t VStar;
       check_binder ctx t' (interpret t) (fun _ -> VStar)
   | Sigma (t, t') ->
-      ensure ty VStar;
+      ensure VStar ty;
       check ctx t VStar;
       check_binder ctx t' (interpret t) (fun _ -> VStar)
   | Lam f -> (
       match ty with
       | VPi (t, t') ->
           check_binder ctx f t (fun arg -> t' (VNeu (NVar arg)))
-      | _ -> failwith "check: unexpected lambda")
+      | _ -> raise (bad_value "check: unexpected lambda" ty))
   | Tuple (x, y) -> (
       match ty with
       | VSigma (t, t') ->
           check ctx x t;
           check ctx y (t' @@ interpret x)
-      | _ -> failwith "check: unexpected tuple")
-  | Unit -> ensure ty VStar
-  | Nil -> ensure ty VUnit
-  | LabelTy -> ensure ty VStar
-  | Label _ -> ensure ty VLabelTy
-  | LabelsTy -> ensure ty VStar
-  | NilL -> ensure ty VLabelsTy
+      | _ -> raise (bad_value "check: unexpected tuple" ty))
+  | Unit -> ensure VStar ty
+  | Nil -> ensure VUnit ty
+  | LabelTy -> ensure VStar ty
+  | Label _ -> ensure VLabelTy ty
+  | LabelsTy -> ensure VStar ty
+  | NilL -> ensure VLabelsTy ty
   | ConsL (l, ls) ->
-      ensure ty VLabelsTy;
+      ensure VLabelsTy ty;
       check ctx l VLabelTy;
       check ctx ls VLabelsTy
   | Enum ls ->
-      ensure ty VStar;
+      ensure VStar ty;
       check ctx ls VLabelsTy
   | EnumZe -> (
       match ty with
       | VEnum (VConsL _) -> ()
-      | _ -> failwith "check: unexpected index")
+      | _ -> raise (mismatch VEnumZe ty))
   | EnumSuc i -> (
       match ty with
       | VEnum (VConsL (_, ls)) -> check ctx i (VEnum ls)
-      | _ -> failwith "check: unexpected index")
+      | _ -> raise (bad_value "check: unexpected index" ty))
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

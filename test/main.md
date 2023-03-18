@@ -302,7 +302,8 @@ val t : term -> term = <fun>
 # check (condition true_ "x" t true_ bool_ty)  ?$(t true_);;
 - : unit = ()
 # check (condition star "x" t true_ bool_ty )  ?$(t true_);;
-Exception: Failure "synth : term type is not synthetisable".
+Exception:
+Scratch.Types.BadTerm ("synth : term type is not synthetisable", *).
 # check (condition true_ "x" (fun _ -> true_) true_ bool_ty )  ?$(t true_);;
 Exception:
 Scratch.Typing.Mismatch {expected = *; got = (Enum {'false 'true})}.
@@ -407,11 +408,11 @@ val ebool : term = (Enum {'true 'false})
 # check (enum_idx 1) ?$ebool;;
 - : unit = ()
 # check (enum_idx 2) ?$ebool;;
-Exception: Failure "check: unexpected index".
+Exception: Scratch.Typing.Mismatch {expected = (Enum {}); got = 0}.
 # check (enum_idx 0) ?$(enum @@ labels []);;
-Exception: Failure "check: unexpected index".
+Exception: Scratch.Typing.Mismatch {expected = (Enum {}); got = 0}.
 # check (enum_idx 0) ?$(enum @@ labels []);;
-Exception: Failure "check: unexpected index".
+Exception: Scratch.Typing.Mismatch {expected = (Enum {}); got = 0}.
 ```
 
 ## Record and switch
@@ -440,6 +441,12 @@ VSigma (VEnum (VConsL (VLabel "true", VConsL (VLabel "false", VNilL))),
 # ?$(case (enum_idx 1) "_" (fun _ -> Star) cs) ;;
 - : value = VEnumZe
 # ?$(case (enum_idx 2) "_" (fun _ -> Star) cs) ;;
-Exception: Failure "interpret: value is not a tuple".
+Exception:
+Scratch.Types.BadTerm ("interpret: value is not a tuple", (snd
+   (snd
+     (
+       ( (1+ 0):(Enum {'false 'true}) ),
+       (( 0:(Enum {'false 'true}) ), nil)
+     )))).
 ```
 

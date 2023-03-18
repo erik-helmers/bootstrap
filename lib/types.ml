@@ -100,3 +100,9 @@ let scoped_unbind a t =
 
 let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
 let close_ = Binder.close_ scoped_unbind
+
+exception BadTerm of string * term
+exception BadValue of string * value
+
+let bad_value s v = BadValue (s, v)
+let bad_term s v = BadTerm (s, v)
