@@ -85,20 +85,20 @@ val mul : term = (fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
 ```ocaml
 # app2 mul (num 0) (num 0);;
 - : term = (((fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
-(fn f -> (fn x -> x)))
-(fn f -> (fn x -> x)))
+  (fn f -> (fn x -> x)))
+  (fn f -> (fn x -> x)))
 # app2 mul (num 1) (num 0);;
 - : term = (((fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
-(fn f -> (fn x -> (f x))))
-(fn f -> (fn x -> x)))
+  (fn f -> (fn x -> (f x))))
+  (fn f -> (fn x -> x)))
 # app2 mul (num 1) (num 1);;
 - : term = (((fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
-(fn f -> (fn x -> (f x))))
-(fn f -> (fn x -> (f x))))
+  (fn f -> (fn x -> (f x))))
+  (fn f -> (fn x -> (f x))))
 # app2 mul (num 2) (num 1);;
 - : term = (((fn m -> (fn n -> (fn f -> (fn x -> ((m (n f)) x)))))
-(fn f -> (fn x -> (f (f x)))))
-(fn f -> (fn x -> (f x))))
+  (fn f -> (fn x -> (f (f x)))))
+  (fn f -> (fn x -> (f x))))
 
 # let correct a b = norm_equal (app2 mul (num a) (num b)) (num (a*b));;
 val correct : int -> int -> bool = <fun>
@@ -127,8 +127,8 @@ val exp : term = (fn m -> (fn n -> (fn f -> (fn x -> (((n m) f) x)))))
 ```ocaml
 # app2 exp (num 1) (num 0);;
 - : term = (((fn m -> (fn n -> (fn f -> (fn x -> (((n m) f) x)))))
-(fn f -> (fn x -> (f x))))
-(fn f -> (fn x -> x)))
+  (fn f -> (fn x -> (f x))))
+  (fn f -> (fn x -> x)))
 # norm @@ app2 exp (num 1) (num 0);;
 - : term = (fn q0 -> (fn q1 -> (q0 q1)))
 # norm_equal (app2 exp (num 2) (num 3)) (num 8);;
@@ -155,14 +155,9 @@ val cbool : term -> bool = <fun>
 
 ```ocaml
 # let _true = bool true;;
-val _true : term = (1+
-  0
-  :
-  Enum{'false 'true})
+val _true : term = ((1+ 0) : (Enum {'false 'true}))
 # let _false = bool false;;
-val _false : term = (0
-  :
-  Enum{'false 'true})
+val _false : term = (0 : (Enum {'false 'true}))
 # let _bool b = norm_equal b _true;; 
 val _bool : term -> bool = <fun>
 ```
@@ -200,63 +195,45 @@ val bcond : term -> term -> term -> term = <fun>
     bcond p (bcond q _true _false)
              _false);;
 val tand : term = (fn p ->
-  (fn q ->
-  record
-  p
-  as
-  _
-  return
-  bool
-  with
-  (
-    (0
-    :
-    Enum{'false 'true}),
-    (
-      record
-      q
-      as
-      _
-      return
-      bool
+    (fn q ->
+      case p as _ return bool
       with
-      ((0 : Enum{'false 'true}), ((1+ 0 : Enum{'false 'true}), nil)),
-      nil
-    )
-  )))
+        (
+          (0 : (Enum {'false 'true})),
+          (
+            case q as _ return bool
+            with
+              (
+                (0 : (Enum {'false 'true})),
+                (((1+ 0) : (Enum {'false 'true})), nil)
+              ),
+            nil
+          )
+        )))
 # let tor = fn2 "p" "q" (fun p q -> 
     bcond p _true
            (bcond q _true _false));;
 val tor : term = (fn p ->
-  (fn q ->
-  record
-  p
-  as
-  _
-  return
-  bool
-  with
-  (
-    record
-    q
-    as
-    _
-    return
-    bool
-    with
-    ((0 : Enum{'false 'true}), ((1+ 0 : Enum{'false 'true}), nil)),
-    ((1+ 0 : Enum{'false 'true}), nil)
-  )))
+    (fn q ->
+      case p as _ return bool
+      with
+        (
+          case q as _ return bool
+          with
+            (
+              (0 : (Enum {'false 'true})),
+              (((1+ 0) : (Enum {'false 'true})), nil)
+            ),
+          (((1+ 0) : (Enum {'false 'true})), nil)
+        )))
 # let tnot = fn "p" (fun p -> bcond p _false _true);;
 val tnot : term = (fn p ->
-  record
-  p
-  as
-  _
-  return
-  bool
-  with
-  ((1+ 0 : Enum{'false 'true}), ((0 : Enum{'false 'true}), nil)))
+    case p as _ return bool
+    with
+      (
+        ((1+ 0) : (Enum {'false 'true})),
+        ((0 : (Enum {'false 'true})), nil)
+      ))
 ```
 
 

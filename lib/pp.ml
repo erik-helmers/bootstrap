@@ -11,25 +11,18 @@ let of_pp pp t =
       flush_str_formatter ())
 
 let atom = of_pp Atom.pp
-
-let cond cnd x t b b' =
-  parens
-  @@ flow (break 1) [ string "cond"; cnd; brackets (x ^/^ t); b; b' ]
+let annot x t = parens (infix 2 1 colon x t)
 
 let lam arg body =
-  parens @@ flow (break 1) [ string "fn"; arg; string "->"; body ]
+  group @@ parens @@ string "fn" ^^ blank 1
+  ^^ align (flow (break 1) [ arg; string "->" ])
+  ^//^ body
 
-let pi x t t' =
-  flow (break 0) [ pi_sym; parens (x ^/^ colon ^/^ t); dot; t' ]
+let pi_like sym x t t' =
+  prefix 2 0 (flow (break 0) [ sym; annot x t; dot ]) t'
 
-let sigma x t t' =
-  flow (break 0) [ sigma_sym; parens (x ^/^ colon ^/^ t); dot; t' ]
-
-let app t t' = parens (t ^/^ t')
-let tuple t t' = OCaml.tuple [ t; t' ]
-let fst t = app (string "fst") t
-let snd t = app (string "snd") t
-let annot x t = parens (x ^/^ colon ^/^ t)
+let app t t' = group @@ parens (t ^//^ t')
+let tuple t t' = group @@ OCaml.tuple [ t; t' ]
 
 let list_of_labels ls =
   let rec aux ls acc =
@@ -56,32 +49,43 @@ and term e =
   | App (t, t') -> app (term t) (term t')
   | Pi (t, t') ->
       let arg, body = open_ t' in
-      pi (atom arg) (term t) (term body)
+      pi_like pi_sym (atom arg) (term t) (term body)
   | Tuple (t, t') -> tuple (term t) (term t')
-  | Fst t -> fst (term t)
-  | Snd t -> snd (term t)
+  | Fst t -> app !^"fst" (term t)
+  | Snd t -> app !^"snd" (term t)
   | Sigma (t, t') ->
       let arg, body = open_ t' in
-      sigma (atom arg) (term t) (term body)
+      pi_like sigma_sym (atom arg) (term t) (term body)
   | Annot (x, t) -> annot (term x) (term t)
   | Star -> star
-  | Unit -> string "unit"
-  | Nil -> string "nil"
-  | LabelTy -> string "label"
-  | Label s -> squote ^^ string s
-  | LabelsTy -> string "labels"
+  | Unit -> !^"unit"
+  | Nil -> !^"nil"
+  | LabelTy -> !^"label"
+  | Label s -> squote ^^ !^s
+  | LabelsTy -> !^"labels"
   | (NilL as ls) | (ConsL _ as ls) -> labels ls
-  | Enum ls -> string "Enum" ^^ labels ls
-  | EnumZe -> string "0"
-  | EnumSuc t -> string "1+" ^/^ term t
+  | Enum ls -> app !^"Enum" (labels ls)
+  | EnumZe -> !^"0"
+  | EnumSuc t -> app !^"1+" (term t)
   | Record (l, b) ->
       let arg, body = binder b in
-      string "record" ^/^ term l ^/^ string "as" ^/^ arg
-      ^/^ string "return" ^/^ body
+      align
+        (flow (break 1)
+           [
+             string "record" ^//^ term l;
+             string "as" ^/^ arg;
+             string "return" ^//^ body;
+           ])
   | Case (e, b, cs) ->
       let arg, body = binder b in
-      string "record" ^/^ term e ^/^ string "as" ^/^ arg
-      ^/^ string "return" ^/^ body ^/^ string "with" ^/^ term cs
+      align
+        (flow (break 1)
+           [
+             string "case" ^//^ term e;
+             string "as" ^/^ arg;
+             string "return" ^//^ body;
+             string "with" ^//^ term cs;
+           ])
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

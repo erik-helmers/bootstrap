@@ -65,24 +65,19 @@ val x : atom = x
 # fn "x" (fun x -> x);;
 - : term = (fn x -> x)
 # app (var "f") (var "x");;
-- : term = (f
-x)
+- : term = (f x)
 # pi "x" (var "*") (fun x -> x);;
 - : term = Π(x : *).x
 # tuple (var "x", var "y");;
 - : term = (x, y)
 # first (var "t");;
-- : term = (fst
-t)
+- : term = (fst t)
 # second (var "t");;
-- : term = (snd
-t)
+- : term = (snd t)
 # sigma  "x" (var "*") (fun x -> x);;
 - : term = Σ(x : *).x
 # annot (var "x") (var "t");;
-- : term = (x
-:
-t)
+- : term = (x : t)
 # star;;
 - : term = *
 # unit;;
@@ -178,8 +173,7 @@ val cons : value = VLam <fun>
 # quote cons;;
 - : term = (fn q0 -> (fn q1 -> q0))
 # quote (VNeu (NApp(n,id)));;
-- : term = (n
-(fn q0 -> q0))
+- : term = (n (fn q0 -> q0))
 ```
 
 ## Sigma 
@@ -191,11 +185,9 @@ val n : neutral = NVar n
 # quote t ;;
 - : term = ((fn q0 -> q0), (fn q0 -> (fn q1 -> q0)))
 # quote (VNeu (NFst n));;
-- : term = (fst
-n)
+- : term = (fst n)
 # quote (VNeu (NSnd n));;
-- : term = (snd
-n)
+- : term = (snd n)
 ```
 
 
@@ -252,7 +244,8 @@ val synth : term -> value = <fun>
 # check star ?$star;;
 - : unit = ()
 # check star ?$bool_ty;;
-Exception: Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = *}.
+Exception:
+Scratch.Typing.Mismatch {expected = (Enum {'false 'true}); got = *}.
 ```
 
 ## Pi
@@ -280,7 +273,7 @@ val int_id_vty : value = VPi (VNeu (NVar int), <fun>)
 - : unit = ()
 # check int_id ?$(pi "_" int (fun _ -> bool_ty));;
 Exception:
-Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = int}.
+Scratch.Typing.Mismatch {expected = (Enum {'false 'true}); got = int}.
 # synth (app (annot int_id int_id_ty) (x));;
 - : value = VNeu (NVar int)
 # let f =  atom "f";;
@@ -311,9 +304,11 @@ val t : term -> term = <fun>
 # check (condition star "x" t true_ bool_ty )  ?$(t true_);;
 Exception: Failure "synth : term type is not synthetisable".
 # check (condition true_ "x" (fun _ -> true_) true_ bool_ty )  ?$(t true_);;
-Exception: Scratch.Typing.Mismatch {expected = *; got = Enum{'false 'true}}.
+Exception:
+Scratch.Typing.Mismatch {expected = *; got = (Enum {'false 'true})}.
 # check (condition true_ "x" t star bool_ty) ?$(t true_);;
-Exception: Scratch.Typing.Mismatch {expected = Enum{'false 'true}; got = *}.
+Exception:
+Scratch.Typing.Mismatch {expected = (Enum {'false 'true}); got = *}.
 ```
 
 ## Sigma 
@@ -352,31 +347,13 @@ Then we have the `(Sigma)` rule.
 val either : term -> term = <fun>
 # let f = fn "a" (fun a -> condition a "a" either x true_) ;;
 val f : term = (fn a ->
-  record
-  a
-  as
-  a
-  return
-  record
-  a
-  as
-  _
-  return
-  *
-  with
-  (Enum{'false 'true}, (int, nil))
-  with
-  ((1+ 0 : Enum{'false 'true}), (x, nil)))
+    case a as a
+    return
+      case a as _ return * with ((Enum {'false 'true}), (int, nil))
+    with (((1+ 0) : (Enum {'false 'true})), (x, nil)))
 # let fty = pi "x" bool_ty either;;
-val fty : term = Π(x : Enum{'false 'true}).
-  record
-  x
-  as
-  _
-  return
-  *
-  with
-  (Enum{'false 'true}, (int, nil))
+val fty : term = Π(x : (Enum {'false 'true})).
+    case x as _ return * with ((Enum {'false 'true}), (int, nil))
 # check f ?$fty;;
 - : unit = ()
 # synth (app (annot f fty) true_);;
@@ -409,7 +386,7 @@ val fty : term = Π(x : Enum{'false 'true}).
 - : unit = ()
 # check (labels [true_]) ?$labels_ty;;
 Exception:
-Scratch.Typing.Mismatch {expected = label; got = Enum{'false 'true}}.
+Scratch.Typing.Mismatch {expected = label; got = (Enum {'false 'true})}.
 ```
 
 
@@ -422,7 +399,7 @@ val lfalse : term = 'false
 # let lbool = labels [ltrue; lfalse];;
 val lbool : term = {'true 'false}
 # let ebool = enum lbool;;
-val ebool : term = Enum{'true 'false}
+val ebool : term = (Enum {'true 'false})
 # check ebool ?$star;;
 - : unit = ()
 # check (enum_idx 0) ?$ebool;;
@@ -433,20 +410,25 @@ val ebool : term = Enum{'true 'false}
 Exception: Failure "check: unexpected index".
 # check (enum_idx 0) ?$(enum @@ labels []);;
 Exception: Failure "check: unexpected index".
+# check (enum_idx 0) ?$(enum @@ labels []);;
+Exception: Failure "check: unexpected index".
 ```
 
 ## Record and switch
 
 ```ocaml
 # ebool;;
-- : term = Enum{'true 'false}
+- : term = (Enum {'true 'false})
 # let ty = norm (record (labels []) "_" (fun _ -> bool_ty));;
 val ty : term = unit
 # let ty = norm (record lbool "_" (fun _ -> bool_ty));;
-val ty : term = Σ(q0 : Enum{'false 'true}).Π(q1 : Enum{'false 'true}).unit
+val ty : term = Σ(q0 : (Enum {'false 'true})).Π(q1 : (Enum {'false
+  'true})).unit
 # let cs = tuple (true_, tuple (false_, nil));;
-val cs : term = ((1+ 0 : Enum{'false 'true}), ((0 : Enum{'false 'true}),
-  nil))
+val cs : term = (
+    ((1+ 0) : (Enum {'false 'true})),
+    ((0 : (Enum {'false 'true})), nil)
+  )
 # ?$(record lbool "_" (fun _ -> bool_ty));;
 - : value =
 VSigma (VEnum (VConsL (VLabel "true", VConsL (VLabel "false", VNilL))),
