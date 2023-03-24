@@ -1,6 +1,7 @@
 open Types
 open Quote
 open Interpret
+open Syntax
 module Ctx = Map.Make (Atom.Ord)
 
 exception Mismatch of { expected : term; got : term }
@@ -91,6 +92,13 @@ and check ctx t ty =
       match ty with
       | VEnum (VConsL (_, ls)) -> check ctx i (VEnum ls)
       | _ -> raise (bad_value "check: unexpected index" ty))
+  | DUnit -> ensure VDescTy ty
+  | DVar -> ensure VDescTy ty
+  | DSigma (s, d) | DPi (s, d) ->
+      ensure VDescTy ty;
+      check ctx s VStar;
+      check ctx d (interpret @@ pi "s" s (fun _ -> desc_ty))
+  | DescTy -> ensure VStar ty
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

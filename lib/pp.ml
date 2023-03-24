@@ -3,6 +3,9 @@ open Types
 
 let pi_sym = fancystring "Π" 1
 let sigma_sym = fancystring "Σ" 1
+let llbracket = fancystring "⟦" 1
+let rrbracket = fancystring "⟧" 1
+let dbrackets d = llbracket ^^ d ^^ rrbracket
 
 let of_pp pp t =
   string
@@ -22,7 +25,20 @@ let pi_like sym x t t' =
   prefix 2 0 (flow (break 0) [ sym; annot x t; dot ]) t'
 
 let app t t' = group @@ parens (t ^//^ t')
+let appn ts = parens (flow (break 1) ts)
 let tuple t t' = group @@ OCaml.tuple [ t; t' ]
+
+let sym_as_return sym t arg body =
+  align
+    (flow (break 1)
+       [ sym ^//^ t; group (!^"as" ^/^ arg ^/^ !^"return") ^//^ body ])
+
+let sym_as_return_with sym t arg body w =
+  align
+    (flow (break 1)
+       [
+         sym ^//^ t; !^"as" ^/^ arg; !^"return" ^//^ body; !^"with" ^//^ w;
+       ])
 
 let list_of_labels ls =
   let rec aux ls acc =
@@ -69,23 +85,15 @@ and term e =
   | EnumSuc t -> app !^"1+" (term t)
   | Record (l, b) ->
       let arg, body = binder b in
-      align
-        (flow (break 1)
-           [
-             string "record" ^//^ term l;
-             string "as" ^/^ arg;
-             string "return" ^//^ body;
-           ])
+      sym_as_return !^"record" (term l) arg body
   | Case (e, b, cs) ->
       let arg, body = binder b in
-      align
-        (flow (break 1)
-           [
-             string "case" ^//^ term e;
-             string "as" ^/^ arg;
-             string "return" ^//^ body;
-             string "with" ^//^ term cs;
-           ])
+      sym_as_return_with !^"case" (term e) arg body (term cs)
+  | DUnit -> bquote ^^ !^"unit"
+  | DVar -> bquote ^^ !^"var"
+  | DPi (t, t') -> appn [ bquote ^^ pi_sym; term t; term t' ]
+  | DSigma (t, t') -> appn [ bquote ^^ sigma_sym; term t; term t' ]
+  | DescTy -> !^"desc"
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

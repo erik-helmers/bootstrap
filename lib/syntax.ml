@@ -63,3 +63,10 @@ let condition c x t b b' = case c x t (tuple (b', tuple (b, nil)))
 
 (* shorthand for uniform type in branches *)
 let cond c t b b' = condition c "_" (fun _ -> t) b b'
+(* Descriptions *)
+
+let dunit = DUnit
+let dvar = DVar
+let dpi t t' = DPi (t, t')
+let dsigma t t' = DSigma (t, t')
+let desc_ty = DescTy

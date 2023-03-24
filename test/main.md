@@ -445,8 +445,8 @@ Exception:
 Scratch.Types.BadTerm ("interpret: value is not a tuple", (snd
    (snd
      (
-       ( (1+ 0):(Enum {'false 'true}) ),
-       (( 0:(Enum {'false 'true}) ), nil)
+       ((1+ 0) : (Enum {'false 'true})),
+       ((0 : (Enum {'false 'true})), nil)
      )))).
 ```
 
