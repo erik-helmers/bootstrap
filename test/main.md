@@ -450,3 +450,31 @@ Scratch.Types.BadTerm ("interpret: value is not a tuple", (snd
      )))).
 ```
 
+
+# Descriptions 
+
+```ocaml
+# norm @@ decode dunit int;;
+- : term = unit
+# norm @@ decode dvar int;;
+- : term = int
+# let ty = norm (decode (dpi bool_ty (fn "_" (fun _ -> dvar))) int);;
+val ty : term = Π(q0 : (Enum {'false 'true})).int
+# check (fn "c" (fun c -> cond c int x y)) ?$ty;;
+- : unit = ()
+# let ty = norm (decode (dsigma bool_ty (fn "_" (fun _ -> dvar))) int);;
+val ty : term = Σ(q0 : (Enum {'false 'true})).int
+# check (tuple (true_, x)) ?$ty;;
+- : unit = ()
+
+# let ty = norm (decode (dsigma bool_ty (fn "x" (fun x -> cond x desc_ty dvar dunit))) int);;
+val ty : term = Σ(q0 : (Enum {'false 'true})).
+    ⟦case q0 as q1 return desc with (`unit, (`var, nil))⟧ (int)
+# check (tuple(true_, x)) ?$ty;;
+- : unit = ()
+# check (tuple(true_, nil)) ?$ty;;
+Exception: Scratch.Typing.Mismatch {expected = int; got = unit}.
+# check (tuple(false_, nil)) ?$ty;;
+- : unit = ()
+```
+

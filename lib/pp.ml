@@ -93,6 +93,8 @@ and term e =
   | DVar -> bquote ^^ !^"var"
   | DPi (t, t') -> appn [ bquote ^^ pi_sym; term t; term t' ]
   | DSigma (t, t') -> appn [ bquote ^^ sigma_sym; term t; term t' ]
+  | Decode (t, t') ->
+      flow (break 1) [ dbrackets (term t); parens (term t') ]
   | DescTy -> !^"desc"
 
 let to_pp pp (fmt : Format.formatter) t =

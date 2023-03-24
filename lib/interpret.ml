@@ -1,5 +1,6 @@
 open Types
 open Syntax
+open Quote
 
 module Env = struct
   include Atom.Map
@@ -79,6 +80,21 @@ let rec interpret env t =
   | DVar -> VDVar
   | DPi (t, t') -> VDPi (interpret env t, interpret env t')
   | DSigma (t, t') -> VDSigma (interpret env t, interpret env t')
+  | Decode (d, t) ->
+      let rec aux d t =
+        match d with
+        | VDUnit -> VUnit
+        | VDVar -> interpret env t
+        | VDSigma (t', d') ->
+            interpret env
+              (sigma "e" (quote t') (fun e -> decode (app (quote d') e) t))
+        | VDPi (t', d') ->
+            interpret env
+              (pi "e" (quote t') (fun e -> decode (app (quote d') e) t))
+        | VNeu n -> VNeu (NDecode (n, interpret env t))
+        | _ -> raise (bad_value "decode: expected a desc" d)
+      in
+      aux (interpret env d) t
   | DescTy -> VDescTy
 
 and interpret_binder env b x =
