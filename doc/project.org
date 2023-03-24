@@ -116,54 +116,41 @@
 
 
   %%% Pi constructors, eliminators and types
-  % Lambda
   \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
-  % App
   \newcommand{\tapp}[2]{#1\ #2}
-  % Pi
   \newcommand{\tpi}[3]{\Pi(#1:#2).#3}
-  %% Values
-  % Lambda
-  \newcommand{\vlam}[2]{\lambda #1 \mapsto #2}
-  % App (neutral)
-  \newcommand{\napp}[2]{#1\ #2}
-  % Pi
-  \newcommand{\vpi}[3]{\Pi(#1:#2).#3}
+
+  \newcommand{\vlam}[2]{\tlam{#1}{#2}}
+  \newcommand{\napp}[2]{\tapp{#1}{#2}}
+  \newcommand{\vpi}[3]{\tpi{#1}{#2}{#3}}
 
   %%% Sigma
-  % Tuple
   \newcommand{\ttup}[2]{(#1,#2)}
-  % Fst
   \newcommand{\tfst}[1]{\text{fst}\ #1}
-  % Snd
   \newcommand{\tsnd}[1]{\text{snd}\ #1}
-  % Sigma
   \newcommand{\tsig}[3]{\Sigma(#1:#2).#3}
-  %% Values
-  % Tuple
-  \newcommand{\vtup}[2]{(#1,#2)}
-  % Fst
-  \newcommand{\nfst}[1]{\text{fst}\ #1}
-  % Snd
-  \newcommand{\nsnd}[1]{\text{snd}\ #1}
-  % Sigma
-  \newcommand{\vsig}[3]{\Sigma(#1:#2).#3}
+
+  \newcommand{\vtup}[2]{\ttup{#1}{#2}}
+  \newcommand{\nfst}[1]{\tfst{#1}}
+  \newcommand{\nsnd}[1]{\tsnd{#1}}
+  \newcommand{\vsig}[3]{\tsig{#1}{#2}{#3}}
 
   %%% Booleans
   \newcommand{\ttrue}{\text{true}}
   \newcommand{\tfalse}{\text{false}}
   \newcommand{\tcond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
   \newcommand{\tboolty}{\text{bool}}
-  %% Values
-  \newcommand{\vtrue}{\text{true}}
-  \newcommand{\vfalse}{\text{false}}
-  \newcommand{\ncond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
-  \newcommand{\vboolty}{\text{bool}}
+
+  \newcommand{\vtrue}{\ttrue}
+  \newcommand{\vfalse}{\tfalse}
+  \newcommand{\ncond}[5]{\tcond{#1}{#2}{#3}{#4}{#5}}
+  \newcommand{\vboolty}{\tboolty}
 
 
   %%% Unit
   \newcommand{\tnil}{\text{nil}}
   \newcommand{\tunit}{\text{unit}}
+
   \newcommand{\vnil}{\tnil}
   \newcommand{\vunit}{\vunit}
 
