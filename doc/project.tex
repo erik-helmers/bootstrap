@@ -1,4 +1,4 @@
-% Created 2023-03-16 jeu. 13:56
+% Created 2023-03-16 jeu. 16:32
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -18,6 +18,7 @@
 \usepackage{listofitems}
 \usepackage{bssetup}
 \usepackage{xparse}
+\usepackage{stmaryrd}
 \author{Erik Helmers}
 \date{\today}
 \title{Bootstrap}
@@ -26,7 +27,7 @@
  pdftitle={Bootstrap},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 28.2 (Org mode 9.6)}, 
+ pdfcreator={Emacs 28.2 (Org mode 9.5.5)}, 
  pdflang={English}}
 \begin{document}
 
@@ -34,11 +35,10 @@
 \tableofcontents
 
 
-
 \section{Minimal calculus}
-\label{sec:orgda4a01a}
+\label{sec:org116a4f0}
 \subsection{Syntax}
-\label{sec:org410fade}
+\label{sec:org018ff10}
 
 \begin{decl}{\te, \tty, \tk}
  \drule{\te: \tty                 }{annotated term}
@@ -57,7 +57,7 @@
 where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds respectively.
 
 \subsection{Context}
-\label{sec:orgb43fc96}
+\label{sec:org3655f45}
 
 \begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
@@ -72,7 +72,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Evaluation}
-\label{sec:org1c3d183}
+\label{sec:org8b35bc8}
 
 \begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
@@ -156,7 +156,7 @@ where \(\te\), \(\tty\), \(\tk\) represent general expressions, types and kinds 
 \end{mathpar}
 
 \subsection{Typing}
-\label{sec:org2e3cb60}
+\label{sec:org74f0322}
 
 In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezises to \(\vty\) while \(\tycheck{e}{\vty}\) is checkable.
 
@@ -224,11 +224,10 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \and
 \end{mathpar}
 
-
 \section{Interlude : booleans}
-\label{sec:org0c47d6f}
+\label{sec:orgaac9233}
 \subsection{Syntax}
-\label{sec:orge009a67}
+\label{sec:org2a7b757}
 \begin{decl}{\te, \tty, \tk}
  \drule{...}{}
  \drule{\ttrue}{}
@@ -238,7 +237,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{decl}
 
 \subsection{Evaluation}
-\label{sec:org4a10da2}
+\label{sec:org1c6d890}
 
 \begin{decl}{\ve, \vty}
     \drule{...}{}
@@ -292,7 +291,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{mathpar}
 
 \subsection{Typing}
-\label{sec:org6c1c9c9}
+\label{sec:org200d118}
 
 \begin{mathpar}
 
@@ -322,9 +321,9 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 \end{mathpar}
 
 \section{Enumerations}
-\label{sec:org360410b}
+\label{sec:org0bf540c}
 \subsection{Syntax}
-\label{sec:org2cc2bdc}
+\label{sec:org3da53d6}
 \begin{decl}{\te, \tty, \tk}
  \drule{...}{}
  \drule{\tnil}{}
@@ -336,7 +335,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
  \drule{\tlabelsty}{labels type}
 \end{decl}
 \subsection{Evaluation}
-\label{sec:org7bb32bf}
+\label{sec:org7318d6c}
 
 \begin{mathpar}
 
@@ -349,7 +348,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
   { \evalsto {\tls} {\tlscons{\tl}{\tls[2]}} \\
     \evalsto {\tsubst{B}{\tv}{\teze}} {\vty} \\
     \evalsto {\trecord{\tls[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}} {\vty[2]} }
-  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsig{\_}{\vty}{\vty[2]}} }
+  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsigan{\vty}{\vty[2]}} }
 \and
 
 
@@ -381,7 +380,7 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
 
 \end{mathpar}
 \subsection{Typing}
-\label{sec:org07c57b8}
+\label{sec:org652a31d}
 
 \begin{mathpar}
 
@@ -458,5 +457,118 @@ In the following, \(\tysynth {\te}{\vty}\) is an expression whose type synthezis
  }
   { \ctx \ctxmap \tysynth {\tcase{\te}{\tv}{B}{\tid{cs}}}{\vty} }
 \and
+\end{mathpar}
+
+\section{Descriptions}
+\label{sec:org4470202}
+\subsection{Syntax}
+\label{sec:orge86bd08}
+
+\begin{decl}{\te, \tty}
+ \drule{...}{ }
+ \drule{\tdunit}{ }
+ \drule{\tdvar}{ identity functor }
+ \drule{\tdsig{\tty}{\te}}{ }
+ \drule{\tdpi{\tty}{\te}}{ }
+ \drule{\tdecode{\te}{\tty}}{ }
+ \drule{\tdescty}{ descriptor type }
+ \drule{\tdmu{\te}}{ }
+ \drule{\tdctor{\te}}{ }
+\end{decl}
+
+
+\subsection{Evaluation}
+\label{sec:orgcce46db}
+
+\begin{decl}{\ve, \vty}
+ \drule{...}{ }
+ \drule{\vdunit}{ }
+ \drule{\vdvar}{ identity functor }
+ \drule{\vdsig{\vty}{\td}}{ }
+ \drule{\vdpi{\vty}{\td}}{ }
+ \drule{\vdescty}{ descriptor type }
+ \drule{\vdmu{\vn}}{ fixpoint }
+ \drule{\vdctor{\vn}}{ constructor }
+\end{decl}
+
+
+\begin{decl}{\vn}
+ \drule{...}{  }
+ \drule{\vdecode{\vn}{\vty}}{ }
+\end{decl}
+
+
+\begin{mathpar}
+
+ \inferrule*[right=(DecodeNil)]
+  { \evalsto {\td} {\vdunit} }
+  { \evalsto {\tdecode{\td}{\tty}}{\tunit} }
+\and
+
+ \inferrule*[right=(DecodeVar)]
+  { \evalsto {\td} {\vdvar} \\
+    \evalsto {\tty} {\vty} \\
+    }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty} }
+\and
+
+ \inferrule*[right=(DecodeSigma)]
+  { \evalsto {\td}{\vdsig{\vty}{\td[2]}} \\
+    \evalsto {\tsig{\te}{\vty}{\tdecode{\tapp{\td}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+ \inferrule*[right=(DecodePi)]
+  { \evalsto {\td} {\vdpi{\vty}{\td[2]}} \\
+    \evalsto {\tpi{\te}{\vty}{\tdecode{\tapp{\td[2]}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+
+\end{mathpar}
+\subsection{Typing}
+\label{sec:orge7b8d41}
+\begin{mathpar}
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdunit}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdvar}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdescty}{\vstar} }
+
+
+\inferrule*[right=(DSigma)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdsig{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(DPi)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdpi{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(Decode)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} \\
+     \ctx \ctxmap \tycheck{\tty}{\vstar} }
+  { \ctx \ctxmap \tysynth{\tdecode{\td}{\tty}}{\vstar} }
+
+\inferrule*[right=(Mu)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} }
+  { \ctx \ctxmap \tycheck{\tdmu{\td}}{\vstar} }
+
+\\\\
+
+\inferrule*[right=]
+  { \ctx \ctxmap \tycheck{\tty}{\tdecode{\td}{(\tdmu{\td})}} }
+  { \ctx \ctxmap \tycheck{\tdctor{\tty}}{\tdmu{\td}} }
+
 \end{mathpar}
 \end{document}

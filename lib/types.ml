@@ -30,6 +30,14 @@ type term =
   | EnumSuc of term
   | Record of term * term binder
   | Case of term * term binder * term
+  | DUnit
+  | DVar
+  | DPi of term * term binder
+  | DSigma of term * term binder
+  | Decode of term * term
+  | DescTy
+  | Fix of term
+  | Ctor of term
 [@@deriving eq]
 
 type value =
@@ -49,6 +57,13 @@ type value =
   | VEnum of value
   | VEnumZe
   | VEnumSuc of value
+  | VDUnit
+  | VDVar
+  | VDPi of value * (value -> value)
+  | VDSigma of value * (value -> value)
+  | VDescTy
+  | VFix of value
+  | VCtor of value
 
 and neutral =
   | NVar of atom
@@ -57,6 +72,7 @@ and neutral =
   | NSnd of neutral
   | NRecord of neutral * (value -> value)
   | NCase of neutral * (value -> value) * value
+  | NDecode of neutral * value
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -84,6 +100,14 @@ let traverse map_free map_bound term =
     | EnumSuc t -> EnumSuc (aux i t)
     | Record (t, t') -> Record (aux i t, Binder.weaken aux i t')
     | Case (e, t, cs) -> Case (aux i e, Binder.weaken aux i t, aux i cs)
+    | DUnit -> DUnit
+    | DVar -> DVar
+    | DPi (t, t') -> DPi (aux i t, Binder.weaken aux i t')
+    | DSigma (t, t') -> DSigma (aux i t, Binder.weaken aux i t')
+    | Decode (t, t') -> Decode (aux i t, aux i t')
+    | DescTy -> DescTy
+    | Fix t -> Fix (aux i t)
+    | Ctor t -> Ctor (aux i t)
   in
   aux 0 term
 
@@ -100,3 +124,9 @@ let scoped_unbind a t =
 
 let open_ = Binder.open_ (fun a -> Free a |> scoped_bind)
 let close_ = Binder.close_ scoped_unbind
+
+exception BadTerm of string * term
+exception BadValue of string * value
+
+let bad_value s v = BadValue (s, v)
+let bad_term s v = BadTerm (s, v)

@@ -26,6 +26,13 @@ let rec quote env = function
   | VEnum t -> Enum (quote env t)
   | VEnumZe -> EnumZe
   | VEnumSuc t -> EnumSuc (quote env t)
+  | VDUnit -> DUnit
+  | VDVar -> DVar
+  | VDPi (v, v') -> DPi (quote env v, quote_binder env v')
+  | VDSigma (v, v') -> DSigma (quote env v, quote_binder env v')
+  | VDescTy -> DescTy
+  | VFix v -> Fix (quote env v)
+  | VCtor v -> Ctor (quote env v)
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)
@@ -35,6 +42,7 @@ and quote_neutral env = function
   | NRecord (l, t) -> Record (quote_neutral env l, quote_binder env t)
   | NCase (e, t, cs) ->
       Case (quote_neutral env e, quote_binder env t, quote env cs)
+  | NDecode (n, v') -> Decode (quote_neutral env n, quote env v')
 
 and quote_binder env f =
   let fresh = Atom.make (Printf.sprintf "q%d" (List.length env)) in
