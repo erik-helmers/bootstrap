@@ -38,6 +38,7 @@ let labels_ty = LabelsTy
 let consL l ls = ConsL (l, ls)
 let nilL = NilL
 let labels ls = List.fold_left (fun ls l -> consL l ls) NilL ls
+let labelss ls = labels (List.map label ls)
 
 (* Enums *)
 let enum ls = Enum ls
@@ -50,6 +51,7 @@ let enum_idx i =
 
 (* Record and case *)
 let record e x p = Record (e, binder x p)
+let record_of_list ls = List.fold_right (fun t t' -> tuple (t, t')) ls Nil
 let case e x p cs = Case (e, binder x p, cs)
 
 (* Booleans *)
@@ -71,3 +73,6 @@ let dpi t t' = DPi (t, t')
 let dsigma t t' = DSigma (t, t')
 let decode d t = Decode (d, t)
 let desc_ty = DescTy
+let fix t = Fix t
+let in_ t = In t
+let out_ t = Out t

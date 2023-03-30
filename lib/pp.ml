@@ -96,6 +96,9 @@ and term e =
   | Decode (t, t') ->
       flow (break 1) [ dbrackets (term t); parens (term t') ]
   | DescTy -> !^"desc"
+  | Fix t -> app !^"fix" (term t)
+  | In t -> app !^"in" (term t)
+  | Out t -> app !^"out" (term t)
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)
