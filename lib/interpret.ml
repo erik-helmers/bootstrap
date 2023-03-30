@@ -96,6 +96,13 @@ let rec interpret env t =
       in
       aux (interpret env d) t
   | DescTy -> VDescTy
+  | Fix t -> VFix (interpret env t)
+  | In t -> VIn (interpret env t)
+  | Out t -> (
+      match interpret env t with
+      | VIn v -> v
+      | VNeu n -> VNeu (NOut n)
+      | _ -> raise (bad_term "out: expected an in" t))
 
 and interpret_binder env b x =
   let arg, body = open_ b in

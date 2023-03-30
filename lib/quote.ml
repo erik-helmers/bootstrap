@@ -31,6 +31,8 @@ let rec quote env = function
   | VDPi (v, v') -> DPi (quote env v, quote env v')
   | VDSigma (v, v') -> DSigma (quote env v, quote env v')
   | VDescTy -> DescTy
+  | VFix v -> Fix (quote env v)
+  | VIn v -> In (quote env v)
 
 and quote_neutral env = function
   | NVar a -> ( try Bound (index_of env a) with Not_found -> Free a)
@@ -41,6 +43,7 @@ and quote_neutral env = function
   | NCase (e, t, cs) ->
       Case (quote_neutral env e, quote_binder env t, quote env cs)
   | NDecode (n, v') -> Decode (quote_neutral env n, quote env v')
+  | NOut n -> Out (quote_neutral env n)
 
 and quote_binder env f =
   let fresh = Atom.make (Printf.sprintf "q%d" (List.length env)) in

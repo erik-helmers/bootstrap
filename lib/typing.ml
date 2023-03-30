@@ -48,6 +48,10 @@ let rec synth ctx t =
       check ctx d VDescTy;
       check ctx t VStar;
       VStar
+  | Out t -> (
+      match synth ctx t with
+      | VFix ty -> ty
+      | _ -> raise (bad_term "synth: term is not a fix" t))
   | _ -> raise (bad_term "synth : term type is not synthetisable" t)
 
 and check ctx t ty =
@@ -103,6 +107,13 @@ and check ctx t ty =
       check ctx s VStar;
       check ctx d (interpret @@ pi "s" s (fun _ -> desc_ty))
   | DescTy -> ensure VStar ty
+  | Fix d ->
+      ensure VStar ty;
+      check ctx d VDescTy
+  | In t -> (
+      match ty with
+      | VFix d -> check ctx t (interpret (Decode (quote d, Fix (quote d))))
+      | _ -> failwith "check: unexpected ctor")
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

@@ -36,6 +36,9 @@ type term =
   | DSigma of term * term
   | Decode of term * term
   | DescTy
+  | Fix of term
+  | In of term
+  | Out of term
 [@@deriving eq]
 
 type value =
@@ -60,6 +63,8 @@ type value =
   | VDPi of value * value
   | VDSigma of value * value
   | VDescTy
+  | VFix of value
+  | VIn of value
 
 and neutral =
   | NVar of atom
@@ -69,6 +74,7 @@ and neutral =
   | NRecord of neutral * (value -> value)
   | NCase of neutral * (value -> value) * value
   | NDecode of neutral * value
+  | NOut of neutral
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -102,7 +108,11 @@ let traverse map_free map_bound term =
     | DSigma (t, t') -> DSigma (aux i t, aux i t')
     | Decode (t, t') -> Decode (aux i t, aux i t')
     | DescTy -> DescTy
+    | Fix t -> Fix (aux i t)
+    | In t -> In (aux i t)
+    | Out t -> Out (aux i t)
   in
+
   aux 0 term
 
 (* Substitues Bound 0 for v in s  *)
