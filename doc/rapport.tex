@@ -1,4 +1,4 @@
-% Created 2023-05-31 mer. 03:56
+% Created 2023-05-31 mer. 07:20
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -12,12 +12,19 @@
 \usepackage{amssymb}
 \usepackage{capt-of}
 \usepackage{hyperref}
+\usepackage{proof}
+\usepackage{mathpartir}
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage{listofitems}
+\usepackage{bssetup}
+\usepackage{xparse}
+\usepackage{stmaryrd}
 \author{Erik Helmers}
 \date{\today}
-\title{}
+\title{Bootstrap}
 \hypersetup{
  pdfauthor={Erik Helmers},
- pdftitle={},
+ pdftitle={Bootstrap},
  pdfkeywords={},
  pdfsubject={},
  pdfcreator={Emacs 28.2 (Org mode 9.6.1)}, 
@@ -162,18 +169,20 @@
 \newcommand{\EFrdi}[1]{\textcolor{EFrdi}{#1}} % rainbow-delimiters-depth-9-face
 \begin{document}
 
+\maketitle
 \tableofcontents
 
 L'objectif de ce projet de recherche est d'implémenter un système de type qui intègre la descriptions des types au sein de la théorie des types.
 
+\section{Design}
+\label{sec:org26d00d7}
 
-\section{Types dépendants}
-\label{sec:orgdf97212}
-
+\subsection{Préliminaires : Types dépendants}
+\label{sec:org1e3921b}
 
 Les types dépendants constituent le socle de ce projet, il est donc de bon ton de commencer par un rapide rappel sur la notion. \\[0pt]
 
-Le lecteur famillier avec un language de programmation typé moderne aura été exposé à la notion de type générique. Ce sont les types qui sont fonctions d'autre types. Par exemple, les listes en OCaml sont décrites par \texttt{'a list} où \texttt{'a} représente nécessairement un type (\texttt{int}, \texttt{char}, \ldots{}). Ce mécanisme rend plus ergonomique l'expression des structures de données. \\[0pt]
+Le lecteur famillier avec un language de programmation typé moderne aura été exposé à la notion de type générique (ou polymorphique). Ce sont les types qui sont fonctions d'autre types. Par exemple, les listes en OCaml sont décrites par \texttt{'a list} où \texttt{'a} représente nécessairement un type (\texttt{int}, \texttt{char}, \ldots{}). Ce mécanisme rend plus ergonomique la manipulation de structure de données. \\[0pt]
 
 Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation \texttt{(int * 'a) list} où \texttt{(5, int) list} est le type des listes d'entier de longueur 5. \\[0pt]
 
@@ -200,13 +209,579 @@ Pour illustrer ce propos, prenons en exemple les fonctions de choix de l'axiome 
 \end{Verbatim}
 \end{Code}
 
-Ici, la nature de \(\textsf{S}\) n'est pas évidente : il est à la fois terme (à gauche) et type (à droite). Nous passons cette question sous silence, le principal est de constater la dépendance du type flèche sur \textsf{S} en tant que terme.
+Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles données en ???. Cela n'entre pas dans le périmètre de ce projet, mais il est possible de résoudre ce problème en introduisant une hiérarchie des types.
 \end{itemize}
 
-Le choix de décrire un objet mathématique dans ce précédent exemple n'est pas anodin. Il reflète un aspect important de l'intérêt pratique du domaine de ce projet de recherche.
+De l'introduction des types dépendants, il découle un phénomène supplémentaire. Types et valeurs sont nécessairement applatis sur le même plan syntaxique. Le gain d'expressivité est donc aussi accompagné d'une simplification du language. L'objectif final de ce projet est de reproduire un résultat analogue, cette fois sur la description de types dépendants inductifs.
 
-En introduisant les types dépendants, on constate aussi un phénomène notable. Types et valeurs sont applatis sur le même plan syntaxique. En effet, on voit
+\subsection{Description des structures inductives}
+\label{sec:orgb4d780d}
 
-\section{Le problème de la description des types}
-\label{sec:orgb97cd30}
+Nous allons commencer par faire écho à l'introduction de la section précédente.
+
+\begin{Code}
+\begin{Verbatim}
+\color{EFD}\textcolor[HTML]{f5deb3}{\textbf{type}} \EFt{'a list} = Nil | Cons \EFk{of} 'a * 'a list
+
+\textcolor[HTML]{f5deb3}{\textbf{type}} (n: \EFt{int, 'a}) list = \EFk{match} n \EFk{with}
+  | Zero -> Nil
+  | Suc n' -> Cons \EFk{of} 'a * (n', 'a) list
+\end{Verbatim}
+\end{Code}
+
+La description des types ne fait pas parti du language mais d'un méta-language. De ce fait, il est impossible de les manipuler, ni même de les inspecter dans notre théorie des types.
+
+\section{Construction}
+\label{sec:org08c626d}
+
+Cette partie est la construction progressive d'un système de type suffisant pour décrire des types en son sein.
+
+\subsection{Lambda calcul minimal}
+\label{sec:org877343a}
+
+La première étape du projet consiste en l'établissement d'un interprétateur avec type dépendant.
+
+\subsubsection{Syntaxe}
+\label{sec:org6a1a0f8}
+
+\begin{decl}{\te, \tty, \tk}
+ \drule{\te: \tty                 }{annotated term}
+ \drule{\tv                       }{variable}
+ \drule{\tlam{x}{\te}             }{lambda}
+ \drule{\tapp{\te}{\te[2]}        }{application}
+ \drule{\tpi{x}{\tty}{\tty[2]}    }{pi type}
+ \drule{\ttup{\te}{\te[2]}        }{tuple}
+ \drule{\tfst{\te}                }{fst}
+ \drule{\tsnd{\te}                }{snd}
+ \drule{\tsig{\tv}{\tty}{\tty[2]} }{sigma type}
+ \drule{\tstar                    }{type of types}
+\end{decl}
+
+
+où \(\te\), \(\tty\), \(\tk\) représentent des valeurs, des types et des kinds respectivement.
+
+\subsubsection{Contexte}
+\label{sec:org171064d}
+
+\begin{decl}{\ctx}
+    \drule{\epsilon}{empty context}
+    \drule{\ctx, \tv:\vty}{adding a variable}
+\end{decl}
+
+\begin{mathpar}
+\inferrule*{  }{ \ctxValid{\epsilon} }
+\inferrule*
+    { \ctxValid{\ctx} \\ \ctx \ctxmap \tycheck{\vty}{\vstar} }
+    { \ctxValid{\ctx, \tv : \vty} }
+\end{mathpar}
+
+\subsubsection{Evaluation}
+\label{sec:orgc95cd3d}
+
+\begin{decl}{\ve, \vty}
+    \drule{\vn                         }{neutral term}
+    \drule{\vlam {\vv} {\ve}           }{lambda}
+    \drule{\vpi {\tv} {\vty} {\vty[2]} }{dependent function space}
+    \drule{\vtup {\ve} {\ve[2]}        }{tuple}
+    \drule{\vsig {\tv}{\vty}{\vty[2]}  }{dependent pair space }
+    \drule{\vstar                      }{type of types}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{\vv                         }{variable }
+    \drule{\napp{\vn}{\ve}             }{neutral app}
+    \drule{\nfst{\vn}                  }{neutral first projection}
+    \drule{\nsnd{\vn}                  }{neutral second projection}
+\end{decl}
+
+\begin{mathpar}
+
+
+\inferrule*[right=(Star)] {\\} { \evalsto {\tstar}{\vstar} } \and
+
+\inferrule*[right=(Var)]{\\}{ \evalsto {\tv}{\vv} } \and
+
+\inferrule*[right=(Ann)]
+  { \evalsto {\te}{\ve} }
+  { \evalsto {\te:\tty}{\ve} }
+\and
+
+\inferrule*[right=(Lam)]
+    { \evalsto {\te}{\ve} }
+    { \evalsto {\tlam{\tv}{\te}}{\vlam{x}{\ve}} }
+\and
+\inferrule*[right=(Tuple)]
+    { \evalsto {\te}{\ve} \\
+      \evalsto {\te[2]}{\ve[2]} }
+    { \ttup{\te}{\te[2]} \evalsto \ttup{\ve}{\ve[2]} }
+\and
+
+\inferrule*[right=(App)]
+  { \evalsto {\te}{\vlam{\vv}{\ve}} \\
+    \evalsto {\tsubst{\ve[1]}{\tv}{\te[2]}}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\ve[2]} }
+\and
+\inferrule*[right=(NApp)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[2]} }
+  { \evalsto {\tapp{\te}{\te[2]}}{\napp{\vn}{\ve[2]}} }
+\and
+
+\inferrule*[right=(Fst)]
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tfst{\te}}{\ve} }
+\and
+
+\inferrule*[right=(Snd)]
+  { \evalsto {\te}{\ttup{\ve}{\ve[2]}} }
+  { \evalsto {\tsnd{\te}}{\ve[2]}  }
+\and
+
+\inferrule*[right=(NFst)]
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tfst{\te}}{\nfst{\vn}} }
+\and
+
+\inferrule*[right=(NSnd)]
+  { \evalsto {\te}{\vn} }
+  { \evalsto {\tsnd{\te}}{\nsnd{\vn}} }
+\and
+
+\inferrule*[right=(Pi)]
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tpi{\tv}{\tty}{\tty[2]}}{\vpi{\vv}{\vty}{\vty[2]}} }
+\and
+
+\inferrule*[right=(Sigma)]
+  { \evalsto {\tty}{\vty} \\ \evalsto {\tty[2]}{\vty[2]} }
+  { \evalsto {\tsig{\tv}{\tty}{\tty[2]}}{\vsig{\vv}{\vty}{\vty[2]}} }
+\and
+
+
+\end{mathpar}
+
+\subsubsection{Typage}
+\label{sec:org2522e1b}
+
+Dans la suite, nous notons \(\tysynth {\te}{\vty}\) quand le terme  \(\te\) se synthétise en \(\vty\) et \(\tycheck{e}{\vty}\) quand il est possible de vérifier que \(\te\) est un \(\vty\).
+
+\begin{mathpar}
+\centering
+
+\inferrule*[right=(Chk)]
+  { \ctx \ctxmap \tysynth {\te}{\vty} }
+  { \ctx \ctxmap \tycheck{\te}{\vty} }
+\and
+
+\inferrule*[right=(Ann)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\
+   \ctx \ctxmap \tycheck{\te}{\vty}}
+  { \ctx \ctxmap \tysynth {(\te:\tty)}{\vty} }
+\and
+
+
+\inferrule*[right=(Star)]
+  { }
+  { \ctx \ctxmap \tycheck{\tstar}{\vstar} }
+\and
+
+
+\inferrule*[right=(Var)]
+   { \ctx(\tv) = \vty }
+   { \ctx \ctxmap \tysynth {\tv}{\vty} }
+\and
+
+\inferrule*[right=(Lam)]
+  { \ctx,\tv : \vty \ctxmap \tycheck{\te}{\vty[2]} }
+  { \ctx \ctxmap \tycheck{\vlam{\tv}{\te}}{\vpi{\tv}{\vty}{\vty[2]}} }
+\and
+
+\inferrule*[right=(Tuple)]
+  { \ctx \ctxmap \tycheck{\te}{\vty} \\  \ctx \ctxmap \tycheck{\te[2]}{\vty[2]}}
+  { \ctx \ctxmap \tycheck {\vtup{\te}{\te[2]}}{\vsig{\tv}{\vty}{\vty[2]}}}
+\and
+
+\inferrule*[right=(App)]
+  { \ctx \ctxmap \tysynth {\te}{\vpi{x}{\vty}{\vty[2]}}  \\  \ctx \ctxmap \tycheck {\te[2]}{\vty} \\ \evalsto {\tsubst{\vty[2]}{\tv}{\te[2]}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tapp{\te}{\te[2]}}{\vty[3]} }
+\and
+
+\inferrule*[right=(Fst)]
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} }
+  { \ctx \ctxmap \tysynth {\tfst{\te}}{\vty} }
+\and
+
+\inferrule*[right=(Snd)]
+  { \ctx \ctxmap \tysynth {\te}{\vsig{x}{\vty}{\vty[2]}} \\
+    \evalsto {\tsubst{\vty[2]}{\tv}{\tfst{e}}}{\vty[3]} }
+  { \ctx \ctxmap \tysynth {\tsnd{\te}}{\vty[3]} }
+\and
+
+
+\inferrule*[right=(Pi)]
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tpi{\tv}{\tty}{\tty[2]}}{\vstar} }
+\and
+
+\inferrule*[right=(Sigma)]
+   { \ctx \ctxmap \tycheck {\tty}{\vstar} \\ \evalsto {\tty}{\vty} \\ \ctx,\tv:\vty \ctxmap \tycheck {\tty[2]}{\vstar} }
+   { \ctx \ctxmap \tycheck {\tsig{\tv}{\tty}{\tty[2]}}{\vstar} }
+\and
+\end{mathpar}
+
+\subsection{Interlude : booleans}
+\label{sec:orgcb9768f}
+
+At this point, it is useful to be able to run some sanity checks on the implementation.
+This is removed later, once we get our descriptions working.
+
+\subsubsection{Syntaxe}
+\label{sec:org6ddf656}
+
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\ttrue}{}
+ \drule{\tfalse}{}
+ \drule{\tcond{\te}{\tv}{\tty}{\te[2]}{\te[3]}}{condition}
+ \drule{\tboolty}{type of a bool}
+\end{decl}
+
+\subsubsection{Evaluation}
+\label{sec:org1a39c57}
+
+\begin{decl}{\ve, \vty}
+    \drule{...}{}
+    \drule{\vtrue}{}
+    \drule{\vfalse}{}
+    \drule{\vboolty}{}
+\end{decl}
+
+\begin{decl}{\vn}
+    \drule{...}{}
+    \drule{\ncond{\ve}{\tv}{\vty}{\ve[2]}{\ve[3]}}{}
+\end{decl}
+
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \evalsto {\ttrue}{\vtrue} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \evalsto {\tfalse}{\vfalse} }
+\and
+
+\\\\
+
+\inferrule*[right=(CondT)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[2]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(CondF)]
+  { \evalsto {\te}{\vtrue} \\ \evalsto {\te[3]}{\ve} }
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ve} }
+\and
+
+\inferrule*[right=(NCond)]
+  { \evalsto {\te}{\vn} \\ \evalsto {\te[2]}{\ve[1]} \\ \evalsto {\te[3]}{\ve[2]}}
+  { \evalsto {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\ncond{\vn}{\tv}{\vty}{\ve[1]}{\ve[2]}} }
+\and
+
+\\\\
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \evalsto{\tboolty}{\vboolty} }
+\and
+
+\end{mathpar}
+
+\subsubsection{Typing}
+\label{sec:orgbcf3129}
+
+\begin{mathpar}
+
+\inferrule*[right=(True)]
+  { }
+  { \tycheck{\ttrue}{\vboolty} }
+\and
+
+\inferrule*[right=(False)]
+  { }
+  { \tycheck{\tfalse}{\vboolty} }
+\and
+
+\inferrule*[right=(Cond)]
+  { \ctx \ctxmap \tycheck{\te}{\vboolty} \\
+    \ctx,\tv:\vboolty \ctxmap \tycheck{B}{\vstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+ }
+  { \ctx \ctxmap \tysynth {\tcond{\te}{\tv}{B}{\te[2]}{\te[3]}}{\vty} }
+\and
+
+\inferrule*[right=(BoolTy)]
+  { }
+  { \tycheck{\tboolty}{\vstar} }
+\and
+
+\end{mathpar}
+
+\subsection{Enumerations}
+\label{sec:orgb68d858}
+
+\subsubsection{Syntax}
+\label{sec:orgbe40952}
+
+\begin{decl}{\te, \tty, \tk}
+ \drule{...}{}
+ \drule{\tnil}{}
+ \drule{\tunit}{}
+ \drule{\tlabel{\tl}}{label}
+ \drule{\tlabelty}{label type}
+ \drule{\tlsnil}{ }
+ \drule{\tlscons{\tl}{\tls}}{}
+ \drule{\tlabelsty}{labels type}
+\end{decl}
+
+\subsubsection{Evaluation}
+\label{sec:org62933ce}
+
+\begin{mathpar}
+
+ \inferrule*[right=(RecordNil)]
+  { \evalsto {\tls} {\tlsnil} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\tunit} }
+\and
+
+ \inferrule*[right=(RecordCons)]
+  { \evalsto {\tls} {\tlscons{\tl}{\tls[2]}} \\
+    \evalsto {\tsubst{B}{\tv}{\teze}} {\vty} \\
+    \evalsto {\trecord{\tls[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}} {\vty[2]} }
+  { \evalsto{\trecord{\tls}{\tv}{B}}{\vsigan{\vty}{\vty[2]}} }
+\and
+
+
+ \inferrule*[right=(NRecord)]
+  { \evalsto {\tls} {\vn} }
+  { \evalsto {\trecord{\tls}{\tv}{B}}{\nrecord{\vn}{\tv}{B}} }
+\and
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\teze} \\
+    \evalsto{\tfst{\tid{cs}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ve} }
+\and
+
+\inferrule*[right=(CaseSuc)]
+  { \evalsto{\te}{\tesuc{\te[2]}} \\
+    \evalsto{\tsnd{\tid{cs}}}{\tid{cs'}} \\
+    \evalsto{\tcase{\te[2]}{\tv}{\tsubst{B}{\tv}{\tesuc{\tv}}}{\tid{cs'}}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}
+             {\ve}}
+\and
+
+
+\inferrule*[right=(CaseZe)]
+  { \evalsto{\te}{\vn} \\
+    \evalsto{\tid{cs}}{\ve} }
+  { \evalsto {\tcase{\te}{\tv}{B}{\tid{cs}}}{\ncase{\vn}{\tv}{B}{\ve}} }
+\and
+
+\end{mathpar}
+\subsubsection{Typing}
+\label{sec:orgd527ebb}
+
+\begin{mathpar}
+
+ \inferrule*[right=(Nil)]
+  { }
+  {  \tycheck{\tnil}{\tunit} }
+\and
+
+\inferrule*[right=(Unit)]
+  { }
+  { \tycheck{\tunit}{\vstar} }
+\and
+
+ \inferrule*[right=(Label)]
+  { }
+  {  \tycheck {\tlabel{\tl}}{\tlabelty} }
+\and
+
+\inferrule*[right=(LabelTy)]
+  { }
+  { \tycheck {\tlabelty}{\vstar} }
+\and
+
+\\\\
+\inferrule*[right=(NilL)]
+  { }
+  { \tycheck {\tlsnil}{\tlabelsty} }
+\and
+\inferrule*[right=(ConsL)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \tycheck {\tlscons{\tl}{\tls}}{\tlabelsty} }
+\and
+
+\inferrule*[right=(LabelsTy)]
+  { }
+  { \tycheck {\tlabelsty}{\vstar} }
+\and
+
+\\\\
+
+
+\inferrule*[right=(Zero)]
+  { \ctx \ctxmap \tycheck{\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck{\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck{\teze}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Suc)]
+  { \ctx \ctxmap \tycheck {\tl}{\tlabelty} \\
+    \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx \ctxmap \tycheck {n}{\tenum{\tls}}  }
+  { \ctx \ctxmap \tycheck {\tesuc{n}}{\tenum{\tlscons{\tl}{\tls}}} }
+\and
+
+\inferrule*[right=(Enum)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} }
+  { \ctx \ctxmap \tycheck {\tenum{\tls}}{\vstar} }
+\and
+\\\\
+
+\inferrule*[right=(Record)]
+  { \ctx \ctxmap \tycheck {\tls}{\tlabelsty} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+ }
+  { \ctx \ctxmap \tysynth {\trecord{\tls}{\tv}{B}}{\vstar} }
+\and
+
+\inferrule*[right=(Case)]
+  { \ctx \ctxmap \tycheck {\te}{\tenum{\tls}} \\
+    \ctx, \tv : \tenum{\tls} \ctxmap \tycheck {B}{\tstar} \\
+    \evalsto{\tsubst{B}{\tv}{\te}}{\vty} \\
+    \ctx \ctxmap \tycheck {\tid{cs}}{\trecord{\tls}{\tv}{B} }
+ }
+  { \ctx \ctxmap \tysynth {\tcase{\te}{\tv}{B}{\tid{cs}}}{\vty} }
+\and
+\end{mathpar}
+
+\subsection{Descriptions}
+\label{sec:org58ddecc}
+\subsubsection{Syntax}
+\label{sec:org5dfc205}
+
+\begin{decl}{\te, \tty}
+ \drule{...}{ }
+ \drule{\tdunit}{ }
+ \drule{\tdvar}{ identity functor }
+ \drule{\tdsig{\tty}{\te}}{ }
+ \drule{\tdpi{\tty}{\te}}{ }
+ \drule{\tdecode{\te}{\tty}}{ }
+ \drule{\tdescty}{ descriptor type }
+ \drule{\tdmu{\te}}{ }
+ \drule{\tdctor{\te}}{ }
+\end{decl}
+
+\subsubsection{Evaluation}
+\label{sec:orgb2ea223}
+
+\begin{decl}{\ve, \vty}
+ \drule{...}{ }
+ \drule{\vdunit}{ }
+ \drule{\vdvar}{ identity functor }
+ \drule{\vdsig{\vty}{\td}}{ }
+ \drule{\vdpi{\vty}{\td}}{ }
+ \drule{\vdescty}{ descriptor type }
+ \drule{\vdmu{\vn}}{ fixpoint }
+ \drule{\vdctor{\vn}}{ constructor }
+\end{decl}
+
+
+\begin{decl}{\vn}
+ \drule{...}{  }
+ \drule{\vdecode{\vn}{\vty}}{ }
+\end{decl}
+
+
+\begin{mathpar}
+
+ \inferrule*[right=(DecodeNil)]
+  { \evalsto {\td} {\vdunit} }
+  { \evalsto {\tdecode{\td}{\tty}}{\tunit} }
+\and
+
+ \inferrule*[right=(DecodeVar)]
+  { \evalsto {\td} {\vdvar} \\
+    \evalsto {\tty} {\vty} \\
+    }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty} }
+\and
+
+ \inferrule*[right=(DecodeSigma)]
+  { \evalsto {\td}{\vdsig{\vty}{\td[2]}} \\
+    \evalsto {\tsig{\te}{\vty}{\tdecode{\tapp{\td[2]}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+ \inferrule*[right=(DecodePi)]
+  { \evalsto {\td} {\vdpi{\vty}{\td[2]}} \\
+    \evalsto {\tpi{\te}{\vty}{\tdecode{\tapp{\td[2]}{\te}}{\tty}}}{\vty[2]} }
+  { \evalsto {\tdecode{\td}{\tty}}{\vty[2]} }
+\and
+
+
+\end{mathpar}
+
+\subsubsection{Typing}
+\label{sec:org8a2194d}
+
+\begin{mathpar}
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdunit}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdvar}{\vdescty} }
+
+\inferrule*[right=]
+  { }
+  { \ctx \ctxmap \tycheck{\tdescty}{\vstar} }
+
+
+\inferrule*[right=(DSigma)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdsig{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(DPi)]
+  { \ctx \ctxmap \tycheck{\tty}{\vstar} \\
+    \evalsto {\tty}{\vty} \\
+     \ctx \ctxmap \tycheck{\td}{\vpian{\vty}{\vdescty}} }
+  { \ctx \ctxmap \tycheck{\tdpi{\tty}{\td}}{\vdescty} }
+
+\inferrule*[right=(Decode)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} \\
+     \ctx \ctxmap \tycheck{\tty}{\vstar} }
+  { \ctx \ctxmap \tysynth{\tdecode{\td}{\tty}}{\vstar} }
+
+\inferrule*[right=(Mu)]
+  { \ctx \ctxmap \tycheck{\td}{\vdescty} }
+  { \ctx \ctxmap \tycheck{\tdmu{\td}}{\vstar} }
+
+\\\\
+
+\inferrule*[right=]
+  { \ctx \ctxmap \tycheck{\tty}{\tdecode{\td}{(\tdmu{\td})}} }
+  { \ctx \ctxmap \tycheck{\tdctor{\tty}}{\tdmu{\td}} }
+
+\end{mathpar}
 \end{document}
