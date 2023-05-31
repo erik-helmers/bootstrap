@@ -1,0 +1,59 @@
+
+
+L'objectif de ce projet de recherche est d'implémenter un système de type qui intègre la descriptions des types au sein de la théorie des types.
+
+* Design
+
+** Préliminaires : Types dépendants
+
+Les types dépendants constituent le socle de ce projet, il est donc de bon ton de commencer par un rapide rappel sur la notion. \\
+
+Le lecteur famillier avec un language de programmation typé moderne aura été exposé à la notion de type générique (ou polymorphique). Ce sont les types qui sont fonctions d'autre types. Par exemple, les listes en OCaml sont décrites par ='a list= où ='a= représente nécessairement un type (=int=, =char=, ...). Ce mécanisme rend plus ergonomique la manipulation de structure de données. \\
+
+Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation =(int * 'a) list= où =(5, int) list= est le type des listes d'entier de longueur 5. \\
+
+TODO: Attention à ne pas confondre ce concept avec un simple : =int * 'a list=, on veut décrire une contrainte au niveau du typage pas ajouter des données.
+
+Ce qui rend cruciale l'introduction de cette expressivité, est qu'elle permet d'encoder, en plus de sa structure, la logique d'un type. Par nature, les types dépendants décrivent donc un comportement dynamique.\\
+
+Pour illustrer ce propos, prenons en exemple les fonctions de choix de l'axiome éponyme.
+
+   - Mathématiquement, soit \( X \) un ensemble, alors une fonction \(f\) est de choix si elle a pour structure \[ f : \mathcal{P}(X) \to X    \] et qu'elle vérifie \[\forall S \in \mathcal{P}(X), f(S) \in S\]
+
+   - Dans un language simplement typé, en supposant que \(\textsf{X}\) et \(\textsf{P(X)}\) désignent des types, on peut décrire la structure d'une fonction de choix:
+
+    #+begin_src ocaml
+    val f : P(X) -> X
+    #+end_src
+
+   - Avec des types dépendants, il est aussi possible d'en décrire la logique:
+
+    #+begin_src ocaml
+    val f : (S : P(X)) -> S
+    #+end_src
+
+     Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles données en ???. Cela n'entre pas dans le périmètre de ce projet, mais il est possible de résoudre ce problème en introduisant une hiérarchie des types.
+
+  Le choix de décrire un objet mathématique dans ce précédent exemple n'est pas anodin. Il reflète un aspect important de l'intérêt pratique du domaine de ce projet de recherche.
+
+  De l'introduction des types dépendants, il découle enfin un phénomène supplémentaire. Types et valeurs sont nécessairement applatis sur le même plan syntaxique. Ce gain d'expressivité est donc accompagné d'une simplification du language. L'objectif final de ce projet est de reproduire un résultat analogue.
+
+** Description des structures inductives
+
+Nous allons commencer par faire écho à l'introduction de la section précédente.
+
+#+begin_src ocaml
+type 'a list = Nil | Cons of 'a * 'a list
+#+end_src
+
+Sous sa simplicité apparente, cette déclaration regorge de profondeur :
+ - la description est inductive : il existe une référence à ='a list= au sein même de la déclaration.
+ - la description est paramétrée : comme évoqué précédemment, elle dépend d'un type quelconque ='a=.
+
+#+begin_src ocaml
+type (n: int, 'a) list = match n with
+  | Zero -> Nil
+  | Suc n' -> Cons of 'a * (n', 'a) list
+#+end_src
+
+* Implémentation

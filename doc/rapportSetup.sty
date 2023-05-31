@@ -1,0 +1,202 @@
+% Construit une substitution sur une liste #1
+% définie avec \readlist et pour valeur par défaut #2
+% Substitution
+\newcommand{\varlist}[3]{% 1 = symbol list, 2 = default command, 3 = index
+  \ifnum #3>\listlen{#1}[]%
+  #2{#3}%
+  \else #1[#3]
+  \fi
+}
+
+% Declarations
+
+
+\newcounter{declfirstrule} % 0 : this is the first rule / 1 : false
+
+
+\newcommand{\drule}[2]{%
+  \ifnum\value{declfirstrule}=0\stepcounter{declfirstrule}
+    &::=& #1 &\quad \text{#2}\\
+  \else
+    &|& #1 &\quad \text{#2}\\
+  \fi
+}
+
+\newenvironment{decl}[1]{
+  \setcounter{declfirstrule}{0}
+  \[\begin{array}{lcll}
+    #1
+    }{\end{array}\]}
+
+  % Term symbols
+
+  \newcommand{\tid}[1]{\text{#1}}
+
+  % Expression term identifiers
+  \readlist*\tesyms{e,e',e''}
+  \newcommand{\tedflt}[1]{e_{#1}}
+  \newcommand{\te}[1][1]{\varlist{\tesyms}{\tedflt}{#1}}
+
+  % Term type identifiers
+  \readlist*\ttysyms{\sigma, \sigma', \sigma''}
+  \newcommand{\ttydflt}[1]{\sigma_{#1}}
+  \newcommand{\tty}[1][1]{\varlist{\ttysyms}{\ttydflt}{#1}}
+
+  % Term kind identifiers
+  \readlist*\tksyms{\kappa, \kappa', \kappa''}
+  \newcommand{\tkdflt}[1]{\kappa_{#1}}
+  \newcommand{\tk}[1][1]{\varlist{\tksyms}{\tkdflt}{#1}}
+
+  % Term variables (used in binders)
+  \readlist*\tvsyms{x, y, z}
+  \newcommand{\tvdflt}[1]{x_{#1}}
+  \newcommand{\tv}[1][1]{\varlist{\tvsyms}{\tvdflt}{#1}}
+
+  % Type of types
+  \newcommand{\tstar}{\star}
+  \newcommand{\tsubst}[3]{#1[#2 \mapsto #3]}
+
+
+  % Value symbols
+
+  % Value identifiers
+  \readlist*\vesyms{\nu,\nu',\nu''}
+  \newcommand{\vedflt}[1]{\nu_{#1}}
+  \newcommand{\ve}[1][1]{\varlist{\vesyms}{\vedflt}{#1}}
+
+  % Type identifiers
+  \readlist*\vtysyms{\tau, \tau', \tau''}
+  \newcommand{\vtydflt}[1]{\tau_{#1}}
+  \newcommand{\vty}[1][1]{\varlist{\vtysyms}{\vtydflt}{#1}}
+
+
+  % Variables
+  \readlist*\vvsyms{x, y, z}
+  \newcommand{\vvdflt}[1]{x_{#1}}
+  \newcommand{\vv}[1][1]{\varlist{\vvsyms}{\vvdflt}{#1}}
+
+  % Type of types
+  \newcommand{\vstar}{\star}
+
+  % Neutrals
+
+  % Variable
+  \readlist*\vnsyms{n, n', n''}
+  \newcommand{\vndflt}[1]{n_{#1}}
+  \newcommand{\vn}[1][1]{\varlist{\vnsyms}{\vndflt}{#1}}
+
+
+  % Symbols
+  \newcommand{\evalsto}[2]{#1 \Downarrow #2}
+  \newcommand{\tycheck}[2]{#1 \Leftarrow #2}
+  \newcommand{\tysynth}[2]{#1 \Rightarrow #2}
+
+  \newcommand{\ctx}{\Gamma}
+  \newcommand{\ctxmap}{\vdash}
+  \newcommand{\ctxEmpty}{\Gamma}
+  \newcommand{\ctxValid}[1]{\text{valid}(#1)}
+
+
+
+  %%% Pi constructors, eliminators and types
+  \newcommand{\tlam}[2]{\lambda #1 \mapsto #2}
+  \newcommand{\tapp}[2]{#1\ #2}
+  \newcommand{\tpi}[3]{(#1:#2) \rightarrow #3}
+  \newcommand{\tpian}[2]{#1 \rightarrow #2}
+
+  \newcommand{\vlam}[2]{\tlam{#1}{#2}}
+  \newcommand{\napp}[2]{\tapp{#1}{#2}}
+  \newcommand{\vpi}[3]{\tpi{#1}{#2}{#3}}
+  \newcommand{\vpian}[2]{\tpian{#1}{#2}}
+
+  %%% Sigma
+  \newcommand{\ttup}[2]{(#1,#2)}
+  \newcommand{\tfst}[1]{\text{fst}\ #1}
+  \newcommand{\tsnd}[1]{\text{snd}\ #1}
+  \newcommand{\tsig}[3]{(#1:#2) \times #3}
+  \newcommand{\tsigan}[2]{#1 \times #2}
+
+  \newcommand{\vtup}[2]{\ttup{#1}{#2}}
+  \newcommand{\nfst}[1]{\tfst{#1}}
+  \newcommand{\nsnd}[1]{\tsnd{#1}}
+  \newcommand{\vsig}[3]{\tsig{#1}{#2}{#3}}
+  \newcommand{\vsigan}[2]{\tsigan{#1}{#2}}
+
+  %%% Booleans
+  \newcommand{\ttrue}{\text{true}}
+  \newcommand{\tfalse}{\text{false}}
+  \newcommand{\tcond}[5]{\text{cond}\ #1\ [#2.#3]\ #4\ #5}
+  \newcommand{\tboolty}{\text{bool}}
+
+  \newcommand{\vtrue}{\ttrue}
+  \newcommand{\vfalse}{\tfalse}
+  \newcommand{\ncond}[5]{\tcond{#1}{#2}{#3}{#4}{#5}}
+  \newcommand{\vboolty}{\tboolty}
+
+  %%% Unit
+  \newcommand{\tnil}{\text{nil}}
+  \newcommand{\tunit}{\text{unit}}
+
+  \newcommand{\vnil}{\tnil}
+  \newcommand{\vunit}{\vunit}
+
+  %%% Label, labels
+  \readlist*\tlsyms{t, t', t''}
+  \newcommand{\tldflt}[1]{t_{#1}}
+  \newcommand{\tl}[1][1]{\varlist{\tlsyms}{\tldflt}{#1}}
+
+  \readlist*\tlssyms{l, l', l''}
+  \newcommand{\tlsdflt}[1]{t_{#1}}
+  \newcommand{\tls}[1][1]{\varlist{\tlssyms}{\tlsdflt}{#1}}
+
+  \newcommand{\tlabel}[1]{'\text{#1}}
+  \newcommand{\tlabelty}{\text{label}}
+  \newcommand{\tlsnil}{\text{nil}}
+  \newcommand{\tlscons}[2]{[#1\ #2]}
+  \newcommand{\tlabelsty}{\text{labels}}
+
+  \newcommand{\vlabel}[1]{\tlabel{#1}}
+  \newcommand{\vlabelty}{\tlabelty}
+  \newcommand{\vlsnil}{\tlsnil}
+  \newcommand{\vlscons}[2]{\tlscons{#1}{#2}}
+  \newcommand{\vlabelsty}{\tlabelsty}
+
+
+  %%% Enums
+  \newcommand{\teze}{0}
+  \newcommand{\tesuc}[1]{1{{+}}\ #1}
+  \newcommand{\trecord}[3]{\text{record}\ #1\ \text{as}\ #2\ \text{return}\ #3}
+  \newcommand{\tcase}[4]{\text{case}\ #1\ \text{as}\ #2\ \text{return}\ #3\ \text{with}\ #4}
+  \newcommand{\tenum}[1]{\text{enum}\ #1}
+
+  \newcommand{\veze}{\teze}
+  \newcommand{\vesuc}[1]{\tesuc{#1}}
+  \newcommand{\nrecord}[3]{\trecord{#1}{#2}{#3}}
+  \newcommand{\ncase}[4]{\tcase{#1}{#2}{#3}{#4}}
+  \newcommand{\venum}[1]{\tenum{#1}}
+
+
+  %%% Descriptions
+  \readlist*\tdsyms{D, D', D''}
+  \newcommand{\tddflt}[1]{t_{#1}}
+  \newcommand{\td}[1][1]{\varlist{\tdsyms}{\tddflt}{#1}}
+
+  \newcommand{\tdesc}[1]{`#1}
+  \newcommand{\tdvar}{`\text{var}}
+  \newcommand{\tdunit}{`\tunit}
+  \newcommand{\tdpi}[2]{`\Pi\ #1\ #2}
+  \newcommand{\tdsig}[2]{`\Sigma\ #1\ #2}
+  \newcommand{\tdecode}[2]{\llbracket #1 \rrbracket\ #2}
+  \newcommand{\tdmu}[1]{\mu\ #1}
+  \newcommand{\tdctor}[1]{\text{ctor}\ #1}
+  \newcommand{\tdescty}{\text{desc}}
+
+  \newcommand{\vdesc}[1]{\tdesc{#1}}
+  \newcommand{\vdvar}{\tdvar}
+  \newcommand{\vdunit}{\tdunit}
+  \newcommand{\vdpi}[2]{\tdpi{#1}{#2}}
+  \newcommand{\vdsig}[2]{\tdsig{#1}{#2}}
+  \newcommand{\vdecode}[2]{\tdecode{#1}{#2}}
+  \newcommand{\vdmu}[1]{\tdmu}
+  \newcommand{\vdctor}[1]{\tdctor{#1}}
+  \newcommand{\vdescty}{\tdescty}
