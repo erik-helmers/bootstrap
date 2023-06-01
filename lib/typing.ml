@@ -105,7 +105,7 @@ and check ctx t ty =
   | DSigma (s, d) | DPi (s, d) ->
       ensure VDescTy ty;
       check ctx s VStar;
-      check ctx d (interpret @@ pi "s" s (fun _ -> desc_ty))
+      check ctx d (interpret @@ anpi s desc_ty)
   | DescTy -> ensure VStar ty
   | Fix d ->
       ensure VStar ty;

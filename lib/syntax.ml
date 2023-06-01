@@ -16,12 +16,14 @@ let app f x = App (f, x)
 let app2 f x y = App (app f x, y)
 let app3 f x y z = App (app2 f x y, z)
 let pi x t t' = Pi (t, binder x t')
+let anpi t t' = pi "_" t (fun _ -> t')
 
 (* Sigma related terms *)
 let tuple (t, t') = Tuple (t, t')
 let first t = Fst t
 let second t = Snd t
 let sigma x t t' = Sigma (t, binder x t')
+let ansigma t t' = sigma "_" t (fun _ -> t')
 
 (* Typing *)
 let annot x t = Annot (x, t)
@@ -39,6 +41,8 @@ let consL l ls = ConsL (l, ls)
 let nilL = NilL
 let labels ls = List.fold_left (fun ls l -> consL l ls) NilL ls
 let labelss ls = labels (List.map label ls)
+
+
 
 (* Enums *)
 let enum ls = Enum ls
