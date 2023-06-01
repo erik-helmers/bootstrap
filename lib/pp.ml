@@ -99,6 +99,7 @@ and term e =
   | Fix t -> app !^"fix" (term t)
   | In t -> app !^"in" (term t)
   | Out t -> app !^"out" (term t)
+  | Uncurry t -> app !^"uncurry" (term t)
 
 let to_pp pp (fmt : Format.formatter) t =
   ToFormatter.pretty 0.8 80 fmt (pp t)

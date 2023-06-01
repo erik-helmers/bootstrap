@@ -76,3 +76,4 @@ let desc_ty = DescTy
 let fix t = Fix t
 let in_ t = In t
 let out_ t = Out t
+let uncurry t = Uncurry t

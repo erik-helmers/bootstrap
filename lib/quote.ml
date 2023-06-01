@@ -44,6 +44,7 @@ and quote_neutral env = function
       Case (quote_neutral env e, quote_binder env t, quote env cs)
   | NDecode (n, v') -> Decode (quote_neutral env n, quote env v')
   | NOut n -> Out (quote_neutral env n)
+  | NUncurry n -> Uncurry (quote_neutral env n)
 
 and quote_binder env f =
   let fresh = Atom.make (Printf.sprintf "q%d" (List.length env)) in

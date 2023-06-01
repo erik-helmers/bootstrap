@@ -114,6 +114,8 @@ and check ctx t ty =
       match ty with
       | VFix d -> check ctx t (interpret (Decode (quote d, Fix (quote d))))
       | _ -> failwith "check: unexpected ctor")
+  | Uncurry _ ->
+      ( (* One day I'll regret not having some visible error here *) )
   | _ -> ensure (synth ctx t) ty
 
 and check_binder ctx b arg_ty out_ty =

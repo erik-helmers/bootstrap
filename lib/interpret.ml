@@ -103,6 +103,8 @@ let rec interpret env t =
       | VIn v -> v
       | VNeu n -> VNeu (NOut n)
       | _ -> raise (bad_term "out: expected an in" t))
+  | Uncurry t ->
+      interpret env (fn "p" (fun p -> app2 t (first p) (second p)))
 
 and interpret_binder env b x =
   let arg, body = open_ b in

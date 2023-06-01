@@ -39,6 +39,7 @@ type term =
   | Fix of term
   | In of term
   | Out of term
+  | Uncurry of term
 [@@deriving eq]
 
 type value =
@@ -75,6 +76,7 @@ and neutral =
   | NCase of neutral * (value -> value) * value
   | NDecode of neutral * value
   | NOut of neutral
+  | NUncurry of neutral
 
 let traverse map_free map_bound term =
   let rec aux i term =
@@ -111,6 +113,7 @@ let traverse map_free map_bound term =
     | Fix t -> Fix (aux i t)
     | In t -> In (aux i t)
     | Out t -> Out (aux i t)
+    | Uncurry t -> Uncurry (aux i t)
   in
 
   aux 0 term
