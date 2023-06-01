@@ -1,4 +1,4 @@
-% Created 2023-05-31 mer. 07:20
+% Created 2023-06-01 jeu. 11:59
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -12,6 +12,7 @@
 \usepackage{amssymb}
 \usepackage{capt-of}
 \usepackage{hyperref}
+\setcounter{tocdepth}{2}
 \usepackage{proof}
 \usepackage{mathpartir}
 \usepackage{amsmath,amssymb,amsthm,textcomp}
@@ -20,171 +21,35 @@
 \usepackage{xparse}
 \usepackage{stmaryrd}
 \author{Erik Helmers}
-\date{\today}
-\title{Bootstrap}
+\date{}
+\title{Amorçage des types inductifs}
 \hypersetup{
  pdfauthor={Erik Helmers},
- pdftitle={Bootstrap},
+ pdftitle={Amorçage des types inductifs},
  pdfkeywords={},
  pdfsubject={},
  pdfcreator={Emacs 28.2 (Org mode 9.6.1)}, 
  pdflang={English}}
-
-% Setup for code blocks [1/2]
-
-\usepackage{fvextra}
-
-\fvset{%
-  commandchars=\\\{\},
-  highlightcolor=white!95!black!80!blue,
-  breaklines=true,
-  breaksymbol=\color{white!60!black}\tiny\ensuremath{\hookrightarrow}}
-
-% Make line numbers smaller and grey.
-\renewcommand\theFancyVerbLine{\footnotesize\color{black!40!white}\arabic{FancyVerbLine}}
-
-\usepackage{xcolor}
-
-% In case engrave-faces-latex-gen-preamble has not been run.
-\providecolor{EfD}{HTML}{f7f7f7}
-\providecolor{EFD}{HTML}{28292e}
-
-% Define a Code environment to prettily wrap the fontified code.
-\usepackage[breakable,xparse]{tcolorbox}
-\DeclareTColorBox[]{Code}{o}%
-{colback=EfD!98!EFD, colframe=EfD!95!EFD,
-  fontupper=\footnotesize\setlength{\fboxsep}{0pt},
-  colupper=EFD,
-  IfNoValueTF={#1}%
-  {boxsep=2pt, arc=2.5pt, outer arc=2.5pt,
-    boxrule=0.5pt, left=2pt}%
-  {boxsep=2.5pt, arc=0pt, outer arc=0pt,
-    boxrule=0pt, leftrule=1.5pt, left=0.5pt},
-  right=2pt, top=1pt, bottom=0.5pt,
-  breakable}
-
-% Support listings with captions
-\usepackage{float}
-\floatstyle{plain}
-\newfloat{listing}{htbp}{lst}
-\newcommand{\listingsname}{Listing}
-\floatname{listing}{\listingsname}
-\newcommand{\listoflistingsname}{List of Listings}
-\providecommand{\listoflistings}{\listof{listing}{\listoflistingsname}}
-
-
-% Setup for code blocks [2/2]: syntax highlighting colors
-
-\newcommand\efstrut{\vrule height 2.1ex depth 0.8ex width 0pt}
-\definecolor{EFD}{HTML}{000000}
-\definecolor{EfD}{HTML}{ffffff}
-\newcommand{\EFD}[1]{\textcolor{EFD}{#1}} % default
-\definecolor{EFvp}{HTML}{000000}
-\newcommand{\EFvp}[1]{\textcolor{EFvp}{#1}} % variable-pitch
-\definecolor{EFh}{HTML}{7f7f7f}
-\newcommand{\EFh}[1]{\textcolor{EFh}{#1}} % shadow
-\definecolor{EFsc}{HTML}{228b22}
-\newcommand{\EFsc}[1]{\textcolor{EFsc}{\textbf{#1}}} % success
-\definecolor{EFw}{HTML}{ff8e00}
-\newcommand{\EFw}[1]{\textcolor{EFw}{\textbf{#1}}} % warning
-\definecolor{EFe}{HTML}{ff0000}
-\newcommand{\EFe}[1]{\textcolor{EFe}{\textbf{#1}}} % error
-\definecolor{EFl}{HTML}{ff0000}
-\newcommand{\EFl}[1]{\textcolor{EFl}{#1}} % link
-\definecolor{EFlv}{HTML}{ff0000}
-\newcommand{\EFlv}[1]{\textcolor{EFlv}{#1}} % link-visited
-\definecolor{EFhi}{HTML}{ff0000}
-\newcommand{\EFhi}[1]{\textcolor{EFhi}{#1}} % highlight
-\definecolor{EFc}{HTML}{b22222}
-\newcommand{\EFc}[1]{\textcolor{EFc}{#1}} % font-lock-comment-face
-\definecolor{EFcd}{HTML}{b22222}
-\newcommand{\EFcd}[1]{\textcolor{EFcd}{#1}} % font-lock-comment-delimiter-face
-\definecolor{EFs}{HTML}{8b2252}
-\newcommand{\EFs}[1]{\textcolor{EFs}{#1}} % font-lock-string-face
-\definecolor{EFd}{HTML}{8b2252}
-\newcommand{\EFd}[1]{\textcolor{EFd}{#1}} % font-lock-doc-face
-\definecolor{EFm}{HTML}{008b8b}
-\newcommand{\EFm}[1]{\textcolor{EFm}{#1}} % font-lock-doc-markup-face
-\definecolor{EFk}{HTML}{9370db}
-\newcommand{\EFk}[1]{\textcolor{EFk}{#1}} % font-lock-keyword-face
-\definecolor{EFb}{HTML}{483d8b}
-\newcommand{\EFb}[1]{\textcolor{EFb}{#1}} % font-lock-builtin-face
-\definecolor{EFf}{HTML}{0000ff}
-\newcommand{\EFf}[1]{\textcolor{EFf}{#1}} % font-lock-function-name-face
-\definecolor{EFv}{HTML}{a0522d}
-\newcommand{\EFv}[1]{\textcolor{EFv}{#1}} % font-lock-variable-name-face
-\definecolor{EFt}{HTML}{228b22}
-\newcommand{\EFt}[1]{\textcolor{EFt}{#1}} % font-lock-type-face
-\definecolor{EFo}{HTML}{008b8b}
-\newcommand{\EFo}[1]{\textcolor{EFo}{#1}} % font-lock-constant-face
-\definecolor{EFwr}{HTML}{ff0000}
-\newcommand{\EFwr}[1]{\textcolor{EFwr}{\textbf{#1}}} % font-lock-warning-face
-\newcommand{\EFnc}[1]{#1} % font-lock-negation-char-face
-\definecolor{EFpp}{HTML}{483d8b}
-\newcommand{\EFpp}[1]{\textcolor{EFpp}{#1}} % font-lock-preprocessor-face
-\newcommand{\EFrc}[1]{\textbf{#1}} % font-lock-regexp-grouping-construct
-\newcommand{\EFrb}[1]{\textbf{#1}} % font-lock-regexp-grouping-backslash
-\newcommand{\EFob}[1]{#1} % org-block
-\newcommand{\EFobb}[1]{#1} % org-block-begin-line
-\newcommand{\EFobe}[1]{#1} % org-block-end-line
-\definecolor{EFOa}{HTML}{0000ff}
-\newcommand{\EFOa}[1]{\textcolor{EFOa}{#1}} % outline-1
-\definecolor{EFOb}{HTML}{a0522d}
-\newcommand{\EFOb}[1]{\textcolor{EFOb}{#1}} % outline-2
-\definecolor{EFOc}{HTML}{a020f0}
-\newcommand{\EFOc}[1]{\textcolor{EFOc}{#1}} % outline-3
-\definecolor{EFOd}{HTML}{b22222}
-\newcommand{\EFOd}[1]{\textcolor{EFOd}{#1}} % outline-4
-\definecolor{EFOe}{HTML}{228b22}
-\newcommand{\EFOe}[1]{\textcolor{EFOe}{#1}} % outline-5
-\definecolor{EFOf}{HTML}{008b8b}
-\newcommand{\EFOf}[1]{\textcolor{EFOf}{#1}} % outline-6
-\definecolor{EFOg}{HTML}{483d8b}
-\newcommand{\EFOg}[1]{\textcolor{EFOg}{#1}} % outline-7
-\definecolor{EFOh}{HTML}{8b2252}
-\newcommand{\EFOh}[1]{\textcolor{EFOh}{#1}} % outline-8
-\definecolor{EFhn}{HTML}{008b8b}
-\newcommand{\EFhn}[1]{\textcolor{EFhn}{#1}} % highlight-numbers-number
-\definecolor{EFhq}{HTML}{9370db}
-\newcommand{\EFhq}[1]{\textcolor{EFhq}{#1}} % highlight-quoted-quote
-\definecolor{EFhs}{HTML}{008b8b}
-\newcommand{\EFhs}[1]{\textcolor{EFhs}{#1}} % highlight-quoted-symbol
-\definecolor{EFrda}{HTML}{707183}
-\newcommand{\EFrda}[1]{\textcolor{EFrda}{#1}} % rainbow-delimiters-depth-1-face
-\definecolor{EFrdb}{HTML}{7388d6}
-\newcommand{\EFrdb}[1]{\textcolor{EFrdb}{#1}} % rainbow-delimiters-depth-2-face
-\definecolor{EFrdc}{HTML}{909183}
-\newcommand{\EFrdc}[1]{\textcolor{EFrdc}{#1}} % rainbow-delimiters-depth-3-face
-\definecolor{EFrdd}{HTML}{709870}
-\newcommand{\EFrdd}[1]{\textcolor{EFrdd}{#1}} % rainbow-delimiters-depth-4-face
-\definecolor{EFrde}{HTML}{907373}
-\newcommand{\EFrde}[1]{\textcolor{EFrde}{#1}} % rainbow-delimiters-depth-5-face
-\definecolor{EFrdf}{HTML}{6276ba}
-\newcommand{\EFrdf}[1]{\textcolor{EFrdf}{#1}} % rainbow-delimiters-depth-6-face
-\definecolor{EFrdg}{HTML}{858580}
-\newcommand{\EFrdg}[1]{\textcolor{EFrdg}{#1}} % rainbow-delimiters-depth-7-face
-\definecolor{EFrdh}{HTML}{80a880}
-\newcommand{\EFrdh}[1]{\textcolor{EFrdh}{#1}} % rainbow-delimiters-depth-8-face
-\definecolor{EFrdi}{HTML}{887070}
-\newcommand{\EFrdi}[1]{\textcolor{EFrdi}{#1}} % rainbow-delimiters-depth-9-face
 \begin{document}
 
 \maketitle
 \tableofcontents
 
-L'objectif de ce projet de recherche est d'implémenter un système de type qui intègre la descriptions des types au sein de la théorie des types.
+\vspace{1cm}
+L'objectif de ce projet de recherche est d'implémenter une unique langage dans lequel il est possible
+d'inspecter et de manipuler les types eux-mêmes.
 
 \section{Design}
-\label{sec:org26d00d7}
+\label{sec:org3679b09}
 
-\subsection{Préliminaires : Types dépendants}
-\label{sec:org1e3921b}
+\subsection{Mise en jambes et types dépendants}
+\label{sec:org1292a73}
 
 Les types dépendants constituent le socle de ce projet, il est donc de bon ton de commencer par un rapide rappel sur la notion. \\[0pt]
 
 Le lecteur famillier avec un language de programmation typé moderne aura été exposé à la notion de type générique (ou polymorphique). Ce sont les types qui sont fonctions d'autre types. Par exemple, les listes en OCaml sont décrites par \texttt{'a list} où \texttt{'a} représente nécessairement un type (\texttt{int}, \texttt{char}, \ldots{}). Ce mécanisme rend plus ergonomique la manipulation de structure de données. \\[0pt]
 
-Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation \texttt{(int * 'a) list} où \texttt{(5, int) list} est le type des listes d'entier de longueur 5. \\[0pt]
+Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation \texttt{(nat * 'a) list} où \texttt{(5, int) list} est le type des listes d'entier de longueur 5. \\[0pt]
 
 Ce qui rend cruciale l'introduction de cette expressivité, est qu'elle permet d'encoder, en plus de sa structure, la logique d'un type. Par nature, les types dépendants décrivent donc un comportement dynamique.\\[0pt]
 
@@ -195,56 +60,53 @@ Pour illustrer ce propos, prenons en exemple les fonctions de choix de l'axiome 
 
 \item Dans un language simplement typé, en supposant que \(\textsf{X}\) et \(\textsf{P(X)}\) désignent des types, on peut décrire la structure d'une fonction de choix:
 
-\begin{Code}
-\begin{Verbatim}
-\color{EFD}    \textcolor[HTML]{f5deb3}{\textbf{val}} \EFf{f} : P(X) -> X
-\end{Verbatim}
-\end{Code}
+\begin{verbatim}
+    val f : P(X) -> X
+\end{verbatim}
 
 \item Avec des types dépendants, il est aussi possible d'en décrire la logique:
 
-\begin{Code}
-\begin{Verbatim}
-\color{EFD}    \textcolor[HTML]{f5deb3}{\textbf{val}} \EFf{f} : (S : \EFt{P(X)}) -> S
-\end{Verbatim}
-\end{Code}
+\begin{verbatim}
+    val f : (S : P(X)) -> S
+\end{verbatim}
 
-Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles données en ???. Cela n'entre pas dans le périmètre de ce projet, mais il est possible de résoudre ce problème en introduisant une hiérarchie des types.
+Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles décrites plus tard. En théorie, il est possible de résoudre ce problème en stratifiant l'espace des types mais cela n'entre pas dans le périmètre de ce projet.
 \end{itemize}
 
 De l'introduction des types dépendants, il découle un phénomène supplémentaire. Types et valeurs sont nécessairement applatis sur le même plan syntaxique. Le gain d'expressivité est donc aussi accompagné d'une simplification du language. L'objectif final de ce projet est de reproduire un résultat analogue, cette fois sur la description de types dépendants inductifs.
 
 \subsection{Description des structures inductives}
-\label{sec:orgb4d780d}
+\label{sec:org90e38b3}
 
-Nous allons commencer par faire écho à l'introduction de la section précédente.
+Maintenant que nous nous sommes familiarisés avec la notion de types dépendants, nous pouvons essayer d'expliquer la démarche de ce projet. Reprenons notre précédente discussion sur les listes, voici comment en déclarer le type :
 
-\begin{Code}
-\begin{Verbatim}
-\color{EFD}\textcolor[HTML]{f5deb3}{\textbf{type}} \EFt{'a list} = Nil | Cons \EFk{of} 'a * 'a list
+\begin{verbatim}
+type    nat = Zero | Suc of nat
+type 'a list = Nil  | Cons of 'a * 'a list
+type 'a tree = Leaf | Node of 'a tree * 'a * 'a tree
+\end{verbatim}
 
-\textcolor[HTML]{f5deb3}{\textbf{type}} (n: \EFt{int, 'a}) list = \EFk{match} n \EFk{with}
-  | Zero -> Nil
-  | Suc n' -> Cons \EFk{of} 'a * (n', 'a) list
-\end{Verbatim}
-\end{Code}
+Il est assez facile de remarquer les similarités entre  la déclaration d'une liste avec celle des naturels ou des arbres. Peut-on exploiter ces ressemblances à notre profit, par exemple en facilitant la réutilisation de code ? Pour pouvoir répondre à cette question, il est nécessaire de pouvoir examiner et manipuler les déclarations de types.
 
-La description des types ne fait pas parti du language mais d'un méta-language. De ce fait, il est impossible de les manipuler, ni même de les inspecter dans notre théorie des types.
+Le reste de ce rapport développe les étapes nécessaires pour pouvoir avoir une représentation des types de données
+au sein même de la théorie des types.
 
-\section{Construction}
-\label{sec:org08c626d}
 
-Cette partie est la construction progressive d'un système de type suffisant pour décrire des types en son sein.
+\section{Construction de la théorie}
+\label{sec:orgd04bbf5}
+
+Cette partie est la construction progressive d'un système dans lequel il est possible de répresenter des
+types (sous forme de description). Pour cela, nous étendons trois fois notre langage en suivant le même déroulement : définition de la syntaxe puis des règles d'évaluations et enfin nous explicitons les règles de  typages.
 
 \subsection{Lambda calcul minimal}
-\label{sec:org877343a}
+\label{sec:org996f0ed}
 
-La première étape du projet consiste en l'établissement d'un interprétateur avec type dépendant.
+La première étape du projet consiste en l'établissement d'un système avec types dépendants.
 
 \subsubsection{Syntaxe}
-\label{sec:org6a1a0f8}
+\label{sec:org849f4b7}
 
-\begin{decl}{\te, \tty, \tk}
+\begin{decl}{\te, \tty}
  \drule{\te: \tty                 }{annotated term}
  \drule{\tv                       }{variable}
  \drule{\tlam{x}{\te}             }{lambda}
@@ -258,10 +120,10 @@ La première étape du projet consiste en l'établissement d'un interprétateur 
 \end{decl}
 
 
-où \(\te\), \(\tty\), \(\tk\) représentent des valeurs, des types et des kinds respectivement.
+où \(\te\), \(\tty\) représentent des valeurs, des types  respectivement.
 
 \subsubsection{Contexte}
-\label{sec:org171064d}
+\label{sec:org306f4b8}
 
 \begin{decl}{\ctx}
     \drule{\epsilon}{empty context}
@@ -276,7 +138,7 @@ où \(\te\), \(\tty\), \(\tk\) représentent des valeurs, des types et des kinds
 \end{mathpar}
 
 \subsubsection{Evaluation}
-\label{sec:orgc95cd3d}
+\label{sec:orge11df7a}
 
 \begin{decl}{\ve, \vty}
     \drule{\vn                         }{neutral term}
@@ -360,9 +222,9 @@ où \(\te\), \(\tty\), \(\tk\) représentent des valeurs, des types et des kinds
 \end{mathpar}
 
 \subsubsection{Typage}
-\label{sec:org2522e1b}
+\label{sec:org8d761b4}
 
-Dans la suite, nous notons \(\tysynth {\te}{\vty}\) quand le terme  \(\te\) se synthétise en \(\vty\) et \(\tycheck{e}{\vty}\) quand il est possible de vérifier que \(\te\) est un \(\vty\).
+Dans la suite, nous notons \(\tysynth {\te}{\vty}\) quand le terme  \(\te\) se synthétise en \(\vty\) et \(\tycheck{e}{\vty}\) quand il est possible de vérifier que \(\te\) est d'un type \(\vty\).
 
 \begin{mathpar}
 \centering
@@ -428,14 +290,13 @@ Dans la suite, nous notons \(\tysynth {\te}{\vty}\) quand le terme  \(\te\) se s
 \and
 \end{mathpar}
 
-\subsection{Interlude : booleans}
-\label{sec:orgcb9768f}
+\subsection{Interlude des booléens}
+\label{sec:org317d124}
 
-At this point, it is useful to be able to run some sanity checks on the implementation.
-This is removed later, once we get our descriptions working.
+Avant d'avancer plus loin, il est bon de pouvoir s'assurer que l'implémentation correspond à nos attentes.
 
 \subsubsection{Syntaxe}
-\label{sec:org6ddf656}
+\label{sec:org5119189}
 
 \begin{decl}{\te, \tty, \tk}
  \drule{...}{}
@@ -446,7 +307,7 @@ This is removed later, once we get our descriptions working.
 \end{decl}
 
 \subsubsection{Evaluation}
-\label{sec:org1a39c57}
+\label{sec:org050754c}
 
 \begin{decl}{\ve, \vty}
     \drule{...}{}
@@ -500,7 +361,7 @@ This is removed later, once we get our descriptions working.
 \end{mathpar}
 
 \subsubsection{Typing}
-\label{sec:orgbcf3129}
+\label{sec:org433ff7f}
 
 \begin{mathpar}
 
@@ -530,10 +391,10 @@ This is removed later, once we get our descriptions working.
 \end{mathpar}
 
 \subsection{Enumerations}
-\label{sec:orgb68d858}
+\label{sec:org5099d1d}
 
 \subsubsection{Syntax}
-\label{sec:orgbe40952}
+\label{sec:org404b4e7}
 
 \begin{decl}{\te, \tty, \tk}
  \drule{...}{}
@@ -547,7 +408,7 @@ This is removed later, once we get our descriptions working.
 \end{decl}
 
 \subsubsection{Evaluation}
-\label{sec:org62933ce}
+\label{sec:org5e9952f}
 
 \begin{mathpar}
 
@@ -592,7 +453,7 @@ This is removed later, once we get our descriptions working.
 
 \end{mathpar}
 \subsubsection{Typing}
-\label{sec:orgd527ebb}
+\label{sec:org5481621}
 
 \begin{mathpar}
 
@@ -672,9 +533,9 @@ This is removed later, once we get our descriptions working.
 \end{mathpar}
 
 \subsection{Descriptions}
-\label{sec:org58ddecc}
+\label{sec:orgf84f5c0}
 \subsubsection{Syntax}
-\label{sec:org5dfc205}
+\label{sec:org45c8804}
 
 \begin{decl}{\te, \tty}
  \drule{...}{ }
@@ -689,7 +550,7 @@ This is removed later, once we get our descriptions working.
 \end{decl}
 
 \subsubsection{Evaluation}
-\label{sec:orgb2ea223}
+\label{sec:orgb2f74fe}
 
 \begin{decl}{\ve, \vty}
  \drule{...}{ }
@@ -739,7 +600,7 @@ This is removed later, once we get our descriptions working.
 \end{mathpar}
 
 \subsubsection{Typing}
-\label{sec:org8a2194d}
+\label{sec:org48b6dd5}
 
 \begin{mathpar}
 
@@ -784,4 +645,10 @@ This is removed later, once we get our descriptions working.
   { \ctx \ctxmap \tycheck{\tdctor{\tty}}{\tdmu{\td}} }
 
 \end{mathpar}
+
+
+\section{Conclusion, futur travail}
+\label{sec:orgf86ed3a}
+
+Nous avons défini les structures et règles nécessaires à la représentation paradoxale des types que nous souhaitions accomplir. Malheureusement, si nous avons réussi à bâtir un système de support solide, nous n'avons pas eu le temps de l'employer. Or, c'est ce dernier point qui aurait constitué une étape importante pour la réussite pour ce projet.
 \end{document}

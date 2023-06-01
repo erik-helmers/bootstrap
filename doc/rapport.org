@@ -1,7 +1,9 @@
-#+title: Bootstrap
+#+title: Amorçage des types inductifs
 #+author: Erik Helmers
+#+date:
 
 #+startup: latexpreview fold
+#+latex_class: article
 #+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \usepackage{proof}
 #+latex_header: \usepackage{mathpartir}
@@ -11,19 +13,23 @@
 #+latex_header: \usepackage{xparse}
 #+latex_header: \usepackage{stmaryrd}
 
-L'objectif de ce projet de recherche est d'implémenter un système de type qui intègre la descriptions des types au sein de la théorie des types.
+
+
+
+
+\vspace{1cm}
+L'objectif de ce projet de recherche est d'implémenter une unique langage dans lequel il est possible
+d'inspecter et de manipuler les types eux-mêmes.
 
 * Design
 
-** Préliminaires : Types dépendants
+** Mise en jambes et types dépendants
 
 Les types dépendants constituent le socle de ce projet, il est donc de bon ton de commencer par un rapide rappel sur la notion. \\
 
 Le lecteur famillier avec un language de programmation typé moderne aura été exposé à la notion de type générique (ou polymorphique). Ce sont les types qui sont fonctions d'autre types. Par exemple, les listes en OCaml sont décrites par ='a list= où ='a= représente nécessairement un type (=int=, =char=, ...). Ce mécanisme rend plus ergonomique la manipulation de structure de données. \\
 
-Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation =(int * 'a) list= où =(5, int) list= est le type des listes d'entier de longueur 5. \\
-
-# TODO: Attention à ne pas confondre ce concept avec un simple : =int * 'a list=, on veut décrire une contrainte au niveau du typage pas ajouter des données.
+Les types dépendants eux, sont fonction de termes. Un exemple habituel est celui des listes dont la longueur est représentée dans le type. On pourrait imaginer la notation =(nat * 'a) list= où =(5, int) list= est le type des listes d'entier de longueur 5. \\
 
 Ce qui rend cruciale l'introduction de cette expressivité, est qu'elle permet d'encoder, en plus de sa structure, la logique d'un type. Par nature, les types dépendants décrivent donc un comportement dynamique.\\
 
@@ -43,35 +49,38 @@ Pour illustrer ce propos, prenons en exemple les fonctions de choix de l'axiome 
     val f : (S : P(X)) -> S
     #+end_src
 
-     Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles données en ???. Cela n'entre pas dans le périmètre de ce projet, mais il est possible de résoudre ce problème en introduisant une hiérarchie des types.
+     Un lecteur attentif pourrait remarquer que cette déclaration n'est pas strictement compatible, à priori, avec les règles décrites plus tard. En théorie, il est possible de résoudre ce problème en stratifiant l'espace des types mais cela n'entre pas dans le périmètre de ce projet.
 
   De l'introduction des types dépendants, il découle un phénomène supplémentaire. Types et valeurs sont nécessairement applatis sur le même plan syntaxique. Le gain d'expressivité est donc aussi accompagné d'une simplification du language. L'objectif final de ce projet est de reproduire un résultat analogue, cette fois sur la description de types dépendants inductifs.
 
 ** Description des structures inductives
 
-Nous allons commencer par faire écho à l'introduction de la section précédente.
+Maintenant que nous nous sommes familiarisés avec la notion de types dépendants, nous pouvons essayer d'expliquer la démarche de ce projet. Reprenons notre précédente discussion sur les listes, voici comment en déclarer le type :
 
 #+begin_src ocaml
-type 'a list = Nil | Cons of 'a * 'a list
-
-type (n: int, 'a) list = match n with
-  | Zero -> Nil
-  | Suc n' -> Cons of 'a * (n', 'a) list
+type    nat = Zero | Suc of nat
+type 'a list = Nil  | Cons of 'a * 'a list
+type 'a tree = Leaf | Node of 'a tree * 'a * 'a tree
 #+end_src
 
-La description des types ne fait pas parti du language mais d'un méta-language. De ce fait, il est impossible de les manipuler, ni même de les inspecter dans notre théorie des types.
+Il est assez facile de remarquer les similarités entre  la déclaration d'une liste avec celle des naturels ou des arbres. Peut-on exploiter ces ressemblances à notre profit, par exemple en facilitant la réutilisation de code ? Pour pouvoir répondre à cette question, il est nécessaire de pouvoir examiner et manipuler les déclarations de types.
 
-* Construction
+Le reste de ce rapport développe les étapes nécessaires pour pouvoir avoir une représentation des types de données
+au sein même de la théorie des types.
 
-Cette partie est la construction progressive d'un système de type suffisant pour décrire des types en son sein.
+
+* Construction de la théorie
+
+Cette partie est la construction progressive d'un système dans lequel il est possible de répresenter des
+types (sous forme de description). Pour cela, nous étendons trois fois notre langage en suivant le même déroulement : définition de la syntaxe puis des règles d'évaluations et enfin nous explicitons les règles de  typages.
 
 ** Lambda calcul minimal
 
-La première étape du projet consiste en l'établissement d'un interprétateur minimal avec type dépendant.
+La première étape du projet consiste en l'établissement d'un système avec types dépendants.
 
 *** Syntaxe
 
-\begin{decl}{\te, \tty, \tk}
+\begin{decl}{\te, \tty}
  \drule{\te: \tty                 }{annotated term}
  \drule{\tv                       }{variable}
  \drule{\tlam{x}{\te}             }{lambda}
@@ -85,7 +94,7 @@ La première étape du projet consiste en l'établissement d'un interprétateur 
 \end{decl}
 
 
-où $\te$, $\tty$, $\tk$ représentent des valeurs, des types et des kinds respectivement.
+où $\te$, $\tty$ représentent des valeurs, des types  respectivement.
 
 *** Contexte
 
@@ -186,7 +195,7 @@ où $\te$, $\tty$, $\tk$ représentent des valeurs, des types et des kinds respe
 
 *** Typage
 
-Dans la suite, nous notons \( \tysynth {\te}{\vty} \) quand le terme  \( \te \) se synthétise en \(\vty\) et \( \tycheck{e}{\vty} \) quand il est possible de vérifier que \(\te\) est un \(\vty\).
+Dans la suite, nous notons \( \tysynth {\te}{\vty} \) quand le terme  \( \te \) se synthétise en \(\vty\) et \( \tycheck{e}{\vty} \) quand il est possible de vérifier que \(\te\) est d'un type \(\vty\).
 
 \begin{mathpar}
 \centering
@@ -252,10 +261,9 @@ Dans la suite, nous notons \( \tysynth {\te}{\vty} \) quand le terme  \( \te \) 
 \and
 \end{mathpar}
 
-** Interlude : booleans
+** Interlude des booléens
 
-At this point, it is useful to be able to run some sanity checks on the implementation.
-This is removed later, once we get our descriptions working.
+Avant d'avancer plus loin, il est bon de pouvoir s'assurer que l'implémentation correspond à nos attentes.
 
 *** Syntaxe
 
@@ -596,3 +604,8 @@ This is removed later, once we get our descriptions working.
   { \ctx \ctxmap \tycheck{\tdctor{\tty}}{\tdmu{\td}} }
 
 \end{mathpar}
+
+
+* Conclusion, futur travail
+
+Nous avons défini les structures et règles nécessaires à la représentation paradoxale des types que nous souhaitions accomplir. Malheureusement, si nous avons réussi à bâtir un système de support solide, nous n'avons pas eu le temps de l'employer. Or, c'est ce dernier point qui aurait constitué une étape importante pour la réussite pour ce projet.
