@@ -2,7 +2,7 @@
 #+author: Erik Helmers
 
 #+startup: latexpreview fold
-
+#+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \usepackage{proof}
 #+latex_header: \usepackage{mathpartir}
 #+latex_header: \usepackage{amsmath,amssymb,amsthm,textcomp}
