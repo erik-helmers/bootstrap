@@ -1,0 +1,126 @@
+#+title: Bootstrapping inductive types
+#+author: Erik Helmers
+#+date:
+
+
+
+#+LANGUAGE:  fr
+#+OPTIONS:   H:2 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+HTML_LINK_UP:
+#+HTML_LINK_HOME:
+
+
+#+startup: beamer
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [bigger]
+#+latex_header: \mode<beamer>{\usetheme{Madrid}}
+
+
+* Motivation
+
+** Une illustration
+
+Les structures élementaires se ressemblent fortement :
+
+    - En OCaml :
+
+      #+begin_src ocaml
+        type nat = Zero | Suc of nat
+        type 'a list = Nil | Cons of 'a * nat
+      #+end_src
+
+    - Notation alternative :
+      #+begin_src ocaml
+          NatD    X = 1 + X
+          ListD A X = 1 + A * X
+      #+end_src
+
+** Une illustration
+
+=Zero=, =Nil= ; =Suc= et =Cons= jouent des rôles similaires :
+
+      #+begin_src ocaml
+let (<) (a: nat) (b: nat) = match a, b with
+        | _ , Zero -> false
+        | Zero, Suc _ -> true
+        | Suc m, Suc n -> m < n
+      #+end_src
+
+#+begin_src ocaml
+let lookup (a: nat) (b: 'a list) = match a, b with
+        | _ , Nil -> None
+        | Zero, Cons (x, _) -> Some x
+        | Suc m, Cons (_, xs) -> lookup m xs
+#+end_src
+
+** Question
+
+#+property: beamer_env: plain,c
+
+\begin{center}
+\Huge Comment tirer profit des relations entre ces types ?
+\end{center}
+
+
+* Aperçu des types dépendants
+
+** Lambda cube
+
+*** A block :B_column:
+:PROPERTIES:
+:BEAMER_env: column
+:BEAMER_col: 0.4
+:END:
+    - axe x : types à termes : types dépendants
+    - axe y : termes à types : polymorphisme
+    - axe z : types à types  : constructeur de types
+
+*** Le cube :B_column:
+:PROPERTIES:
+:BEAMER_env: column
+:BEAMER_col: 0.4
+:END:
+    #+ATTR_LATEX: :width 5cm
+   [[file:lambda_cube.png]]
+
+** Lambda cube
+
+- polymorphisme :
+#+begin_src ocaml
+# let id = (fun x -> x)
+val id : 'a -> 'a
+  #+end_src
+
+- constructeur de types :
+#+begin_src ocaml
+# type 'a list = Nil | Cons of 'a * 'a list;;
+# let x = Cons(3, Nil);;
+val x : int list
+#+end_src
+
+- types dépendants:
+#+begin_src ocaml
+   ???
+#+end_src
+
+
+** Types dépendants
+
+Les types dépendants permettent d'encoder de la logique :
+- opérations sur les vecteurs à =n= élements:
+#+begin_src ocaml
+val push : (n, 'a) vect -> 'a -> (n+1, 'a) vect
+val pop  : (n+1, 'a) vect -> (n, 'a) vect
+#+end_src
+
+- opérations sur des preuves :
+#+begin_src ocaml
+type init = 0 proof
+type hr = n proof - (n+1) proof
+val induction : init -> hr -> (n : nat) -> n proof
+#+end_src
+
+* Constructions des univers
